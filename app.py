@@ -16,15 +16,23 @@ st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout="centered"
 
 
 # =========================
-# ESTILOS CUSTOM (DARK MODE SIMPLE)
+# ESTILOS CUSTOM (LOOK CORPORATIVO DARK)
 # =========================
 
 def inject_custom_css():
     st.markdown(
         """
         <style>
+        /* Contenedor principal centrado y más angosto */
+        .block-container {
+            max-width: 900px !important;
+            padding-top: 2rem !important;
+            padding-bottom: 2rem !important;
+        }
+
+        /* Fondo general dark con leve gradiente */
         .stApp {
-            background-color: #020617;
+            background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
             color: #e5e7eb;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
         }
@@ -33,10 +41,24 @@ def inject_custom_css():
             color: #e5e7eb !important;
         }
 
-        p {
-            color: #cbd5f5;
+        p, label, span, div {
+            font-size: 0.94rem;
         }
 
+        /* Hero title */
+        .mentora-hero-title {
+            font-size: 2rem;
+            font-weight: 650;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.15rem;
+        }
+
+        .mentora-hero-subtitle {
+            font-size: 0.98rem;
+            color: #9ca3af;
+        }
+
+        /* Textareas & inputs */
         .stTextArea textarea {
             background-color: #020617 !important;
             color: #e5e7eb !important;
@@ -50,12 +72,15 @@ def inject_custom_css():
             color: #e5e7eb !important;
             border-radius: 999px !important;
             border: 1px solid rgba(148, 163, 184, 0.6) !important;
+            font-size: 0.9rem !important;
+            padding: 0.45rem 0.9rem !important;
         }
 
         .stSelectbox div[data-baseweb="select"] > div {
             background-color: #020617 !important;
             border-radius: 999px !important;
             border: 1px solid rgba(148, 163, 184, 0.6) !important;
+            font-size: 0.9rem !important;
         }
 
         .stCheckbox > label {
@@ -65,8 +90,10 @@ def inject_custom_css():
 
         .stRadio label {
             color: #e5e7eb !important;
+            font-size: 0.9rem;
         }
 
+        /* Botones */
         .stButton>button, .stDownloadButton>button {
             border-radius: 999px !important;
             border: 1px solid rgba(129, 140, 248, 0.9) !important;
@@ -79,17 +106,54 @@ def inject_custom_css():
         }
 
         .stButton>button:disabled, .stDownloadButton>button:disabled {
-            background: #1f2933 !important;
+            background: #111827 !important;
             border-color: #4b5563 !important;
             box-shadow: none !important;
+            color: #6b7280 !important;
         }
 
+        /* Cards suaves para secciones */
+        .mentora-section {
+            background: rgba(15, 23, 42, 0.92);
+            border-radius: 1.1rem;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            padding: 1.1rem 1.2rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .mentora-section h3 {
+            margin-top: 0;
+        }
+
+        /* Línea divisoria suave */
+        hr {
+            border: none;
+            border-top: 1px solid rgba(55, 65, 81, 0.8);
+            margin: 1.2rem 0;
+        }
+
+        /* Footer branding */
         .mentora-footer {
-            margin-top: 1.5rem;
-            font-size: 0.75rem;
+            margin-top: 1.8rem;
+            font-size: 0.78rem;
             color: #6b7280;
             text-align: center;
         }
+
+        /* Pill pequeño */
+        .mentora-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.12rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(129, 140, 248, 0.65);
+            background: rgba(15, 23, 42, 0.95);
+            font-size: 0.7rem;
+            color: #a5b4fc;
+            margin-bottom: 0.4rem;
+        }
+
         </style>
         """,
         unsafe_allow_html=True,
@@ -209,27 +273,11 @@ def build_prompt_individual(block_name, selected_issues, context_answers):
         Estructura del informe que tenés que devolver (en español, tono ejecutivo, claro y directo):
 
         1. Resumen ejecutivo
-           - 3 a 5 bullet points con los hallazgos clave.
-           - Nivel de riesgo percibido en comunicación y procesos (bajo / medio / alto) y por qué.
-
         2. Patrones de liderazgo, comunicación y procesos
-           - Describir los patrones que observás.
-           - Explicar cómo estos patrones impactan en resultados, equipo y cliente.
-
         3. Impacto en experiencia del cliente y en el negocio
-           - Cómo se traduce esto en la experiencia del cliente.
-           - Riesgos: legales, operativos, de rotación, de pérdida de clientes, etc.
-
         4. Oportunidades y focos de mejora
-           - 3 a 5 focos concretos.
-           - Explicar brevemente cada foco.
-
         5. Propuesta de trabajo con coach ejecutivo
-           - Proponer entre 3 y 6 encuentros/sesiones con objetivo por sesión.
-           - Aclarar que este informe es un punto de partida.
-
         6. Nota de límites
-           - Aclarar que esto no reemplaza asesoría legal, contable ni procesos terapéuticos.
 
         Cerrá el informe con:
         "Este informe fue generado con Mentora Process (IA) y está pensado para ser trabajado junto a
@@ -348,13 +396,15 @@ def call_llm(prompt, mode_label="MODO DEMO"):
 # =========================
 
 def individual_mode():
-    st.subheader("🔹 Diagnóstico individual")
+    st.markdown('<div class="mentora-section">', unsafe_allow_html=True)
+
+    st.markdown("### 🔹 Diagnóstico individual")
     st.write(
         "Usá este modo para entender tu propio rol en el lío: cómo decidís, "
         "cómo comunicás y cómo eso impacta en tu empresa o equipo."
     )
 
-    st.markdown("### 1️⃣ Elegí por dónde te duele más hoy")
+    st.markdown("#### 1️⃣ Elegí por dónde te duele más hoy")
 
     block_names = list(BLOCKS.keys())
     selected_block = st.selectbox("Bloque principal", block_names, index=0, key="ind_block")
@@ -371,7 +421,7 @@ def individual_mode():
     if not selected_issues:
         st.info("Marcá al menos una frase que se parezca a lo que pasa en tu empresa o equipo.")
 
-    st.markdown("### 2️⃣ Contame un poco más del contexto")
+    st.markdown("#### 2️⃣ Contame un poco más del contexto")
 
     context_answers = {}
     st.markdown("**Preguntas generales**")
@@ -384,7 +434,7 @@ def individual_mode():
         ans = st.text_area(q, key=f"ind_specific_{selected_block}_{idx}", height=80)
         context_answers[q] = ans
 
-    st.markdown("### 3️⃣ Generar informe ejecutivo")
+    st.markdown("#### 3️⃣ Generar informe ejecutivo")
 
     if st.button(
         "Generar informe individual con IA",
@@ -409,17 +459,21 @@ def individual_mode():
             key="ind_download",
         )
 
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 def team_mode():
-    st.subheader("👥 Síntesis rápida de equipo")
+    st.markdown('<div class="mentora-section">', unsafe_allow_html=True)
+
+    st.markdown("### 👥 Síntesis rápida de equipo")
     st.write(
-        "Usá este modo cuando varias personas del mismo equipo ya dieron su versión "
-        "del problema (por escrito, WhatsApp, formulario, etc.) y querés sacar un diagnóstico rápido."
+        "Usá este modo cuando varias personas del mismo equipo ya dieron su versión del problema "
+        "y querés sacar un diagnóstico rápido y accionable."
     )
 
     team_name = st.text_input("Nombre del equipo / área (opcional)", key="team_name")
 
-    st.markdown("### 1️⃣ Elegí el bloque principal del problema de este equipo")
+    st.markdown("#### 1️⃣ Elegí el bloque principal del problema de este equipo")
 
     block_names = list(BLOCKS.keys())
     selected_block = st.selectbox("Bloque principal", block_names, index=0, key="team_block")
@@ -436,7 +490,7 @@ def team_mode():
     if not selected_issues:
         st.info("Marcá al menos una frase que se parezca a lo que pasa en este equipo.")
 
-    st.markdown("### 2️⃣ Pegá las versiones del equipo")
+    st.markdown("#### 2️⃣ Pegá las versiones del equipo")
 
     team_raw_input = st.text_area(
         "Copiá acá las respuestas / mensajes / notas de los integrantes del equipo.\n"
@@ -451,7 +505,7 @@ def team_mode():
         height=120,
     )
 
-    st.markdown("### 3️⃣ Generar diagnóstico de equipo")
+    st.markdown("#### 3️⃣ Generar diagnóstico de equipo")
 
     disabled_btn = not (selected_issues and team_raw_input.strip())
 
@@ -484,43 +538,66 @@ def team_mode():
             key="team_download",
         )
 
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 # =========================
 # MAIN
 # =========================
 
 def main():
-    # Sidebar simple con branding
-    with st.sidebar:
-        st.markdown("### Mentora Process")
-        st.caption("Diseñado por **Luis Yañez** – Coach Ejecutivo & Consultor.")
+    # HEADER con logo + título (sin sidebar)
+    col_logo, col_text = st.columns([1, 3])
+
+    with col_logo:
         try:
-            st.image("mentora_logo.png", use_column_width=True)
+            st.image("mentora_logo.png", width=90)
         except Exception:
-            st.caption("[acá va el logo Mentora]")
+            st.markdown(
+                "<div style='width:90px;height:90px;border-radius:999px;border:1px solid #4b5563;"
+                "display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#6b7280;'>Logo Mentora</div>",
+                unsafe_allow_html=True,
+            )
 
-    st.title(APP_NAME)
-    st.caption("Diagnóstico de liderazgo, procesos y experiencia del cliente potenciado con IA.")
+    with col_text:
+        st.markdown('<div class="mentora-pill">🧠 Herramienta de diagnóstico estratégico</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="mentora-hero-title">{APP_NAME}</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="mentora-hero-subtitle">'
+            'Diagnóstico de liderazgo, procesos y experiencia del cliente potenciado con IA, '
+            'para conversaciones serias con dueños y gerentes.'
+            '</div>',
+            unsafe_allow_html=True,
+        )
 
+    st.write("")
     st.write(
-        "Esta herramienta te ayuda a poner en palabras el caos, detectar patrones invisibles "
-        "y traducir todo en un informe ejecutivo para trabajar en sesiones de coaching."
+        "En pocos minutos, Mentora Process te ayuda a ordenar el caos, ponerle nombre a los patrones "
+        "que se repiten y generar un informe ejecutivo listo para trabajar en sesión."
     )
+
+    st.write("---")
 
     mode = st.radio(
         "¿Cómo querés usar Mentora Process hoy?",
         ["Diagnóstico individual", "Síntesis rápida de equipo"],
     )
 
-    st.write("---")
+    st.write("")
 
     if mode == "Diagnóstico individual":
         individual_mode()
     else:
         team_mode()
 
+    # Branding al final
     st.markdown(
-        '<div class="mentora-footer">Mentora Process · Marca de Luis Yañez · Desarrollado junto a IA</div>',
+        """
+        <div class="mentora-footer">
+            Mentora Process · Marca de <b>Luis Yañez</b> · Desarrollado junto a IA<br/>
+            Usá este informe como disparador de decisiones y conversaciones estratégicas, no como verdad absoluta.
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
