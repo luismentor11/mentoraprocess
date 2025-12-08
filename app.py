@@ -1,5 +1,4 @@
 import os
-import json
 import textwrap
 from datetime import datetime
 
@@ -17,53 +16,27 @@ st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout="centered"
 
 
 # =========================
-# ESTILOS CUSTOM (DARK MODE)
+# ESTILOS CUSTOM (DARK MODE SIMPLE)
 # =========================
 
 def inject_custom_css():
     st.markdown(
         """
         <style>
-        /* Fondo general dark */
         .stApp {
-            background: radial-gradient(circle at top left, #020617 0, #020617 35%, #020617 100%);
+            background-color: #020617;
             color: #e5e7eb;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
         }
 
-        /* Títulos principales */
         h1, h2, h3, h4 {
             color: #e5e7eb !important;
         }
 
-        /* Parrafos */
         p {
             color: #cbd5f5;
         }
 
-        /* Tarjetas de bloque */
-        .block-card {
-            padding: 0.9rem 1.1rem;
-            border-radius: 0.9rem;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: radial-gradient(circle at top left,
-                                        rgba(79, 70, 229, 0.18),
-                                        rgba(15, 23, 42, 0.96));
-            margin-bottom: 0.5rem;
-        }
-
-        .block-card-title {
-            font-weight: 600;
-            font-size: 0.98rem;
-            color: #e5e7eb;
-        }
-
-        .block-card-subtitle {
-            font-size: 0.85rem;
-            color: #9ca3af;
-        }
-
-        /* TextAreas dark */
         .stTextArea textarea {
             background-color: #020617 !important;
             color: #e5e7eb !important;
@@ -72,29 +45,28 @@ def inject_custom_css():
             font-size: 0.9rem !important;
         }
 
-        /* Selectbox / inputs */
+        .stTextInput input {
+            background-color: #020617 !important;
+            color: #e5e7eb !important;
+            border-radius: 999px !important;
+            border: 1px solid rgba(148, 163, 184, 0.6) !important;
+        }
+
         .stSelectbox div[data-baseweb="select"] > div {
             background-color: #020617 !important;
             border-radius: 999px !important;
             border: 1px solid rgba(148, 163, 184, 0.6) !important;
         }
 
-        /* Checkboxes */
         .stCheckbox > label {
             color: #e5e7eb !important;
             font-size: 0.9rem;
-        }
-
-        /* Radio horizontal */
-        .stRadio > div {
-            flex-direction: row !important;
         }
 
         .stRadio label {
             color: #e5e7eb !important;
         }
 
-        /* Botones */
         .stButton>button, .stDownloadButton>button {
             border-radius: 999px !important;
             border: 1px solid rgba(129, 140, 248, 0.9) !important;
@@ -112,38 +84,12 @@ def inject_custom_css():
             box-shadow: none !important;
         }
 
-        /* Divider más sutil */
-        hr {
-            border-color: rgba(55, 65, 81, 0.8) !important;
-        }
-
-        /* Footer invisible de Streamlit */
-        footer {visibility: hidden;}
-
-        /* Small pill */
-        .mentora-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.12rem 0.6rem;
-            border-radius: 999px;
-            border: 1px solid rgba(129, 140, 248, 0.65);
-            background: rgba(15, 23, 42, 0.9);
-            font-size: 0.7rem;
-            color: #a5b4fc;
-        }
-
-        .mentora-pill span {
-            font-size: 0.9rem;
-        }
-
         .mentora-footer {
             margin-top: 1.5rem;
             font-size: 0.75rem;
             color: #6b7280;
             text-align: center;
         }
-
         </style>
         """,
         unsafe_allow_html=True,
@@ -195,7 +141,6 @@ BLOCKS = {
     },
 }
 
-# Preguntas generales tipo "Juego Oculto" pero en lenguaje empresa
 GENERAL_QUESTIONS = [
     "¿Cuál es hoy el principal dolor o preocupación que tenés respecto a tu empresa o equipo?",
     "Si este problema siguiera igual durante 12 meses, ¿qué impacto tendría en resultados, personas y clientes?",
@@ -204,7 +149,6 @@ GENERAL_QUESTIONS = [
     "En pocas palabras, ¿qué te gustaría que sea distinto en 3 a 6 meses si este proceso funciona?",
 ]
 
-# Preguntas adicionales por bloque (afinando el diagnóstico individual)
 BLOCK_SPECIFIC_QUESTIONS = {
     "Orden & Crecimiento": [
         "¿En qué parte sentís más el caos hoy? (ej: coordinación entre áreas, prioridades, decisiones, reuniones, etc.)",
@@ -225,7 +169,7 @@ BLOCK_SPECIFIC_QUESTIONS = {
 }
 
 # =========================
-# FUNCIÓN PARA ARMAR PROMPT INDIVIDUAL
+# PROMPTS
 # =========================
 
 def build_prompt_individual(block_name, selected_issues, context_answers):
@@ -258,7 +202,7 @@ def build_prompt_individual(block_name, selected_issues, context_answers):
 
     answers_text = "\n\nRESPUESTAS DEL USUARIO:\n"
     for label, answer in context_answers.items():
-        answers_text += f"\n{label}:\n{answer.strip()}\n"
+        answers_text += f"\n{label}:\n{(answer or '').strip()}\n"
 
     instructions = textwrap.dedent(
         """
@@ -269,40 +213,32 @@ def build_prompt_individual(block_name, selected_issues, context_answers):
            - Nivel de riesgo percibido en comunicación y procesos (bajo / medio / alto) y por qué.
 
         2. Patrones de liderazgo, comunicación y procesos
-           - Describir los patrones que observás (ej: dependencia del dueño, caos por crecimiento,
-             tolerancia a la informalidad, evitar conflicto, etc.).
+           - Describir los patrones que observás.
            - Explicar cómo estos patrones impactan en resultados, equipo y cliente.
 
         3. Impacto en experiencia del cliente y en el negocio
-           - Cómo se traduce esto en la experiencia del cliente (consistencia, tiempos, errores, etc.).
+           - Cómo se traduce esto en la experiencia del cliente.
            - Riesgos: legales, operativos, de rotación, de pérdida de clientes, etc.
 
         4. Oportunidades y focos de mejora
-           - 3 a 5 focos concretos (ej: clarificar rol del dueño, ordenar procesos entre áreas,
-             estructurar onboarding, usar mejor el software, etc.).
-           - Explicar brevemente cada foco (qué cambiaría y qué beneficio traería).
+           - 3 a 5 focos concretos.
+           - Explicar brevemente cada foco.
 
         5. Propuesta de trabajo con coach ejecutivo
            - Proponer entre 3 y 6 encuentros/sesiones con objetivo por sesión.
-           - Aclarar que este informe es un punto de partida y que el proceso se profundiza con
-             acompañamiento humano.
+           - Aclarar que este informe es un punto de partida.
 
         6. Nota de límites
            - Aclarar que esto no reemplaza asesoría legal, contable ni procesos terapéuticos.
 
-        Cerrá SIEMPRE el informe con algo como:
+        Cerrá el informe con:
         "Este informe fue generado con Mentora Process (IA) y está pensado para ser trabajado junto a
         un coach ejecutivo humano, como parte de un proceso de mejora continua."
         """
     ).strip()
 
-    full_prompt = f"{intro}\n{issues_text}\n\n{answers_text}\n\n{instructions}"
-    return full_prompt
+    return f"{intro}\n{issues_text}\n\n{answers_text}\n\n{instructions}"
 
-
-# =========================
-# FUNCIÓN PARA ARMAR PROMPT EQUIPO
-# =========================
 
 def build_prompt_team(block_name, selected_issues, team_name, team_raw_input, leader_view):
     block = BLOCKS[block_name]
@@ -319,7 +255,6 @@ def build_prompt_team(block_name, selected_issues, team_name, team_raw_input, le
         Tu tarea:
         - Leer esas versiones como si fueran "capas del mismo lío".
         - Detectar patrones compartidos y contradicciones.
-        - Identificar juegos de poder, silencios, culpas y puntos ciegos (sin usar lenguaje terapéutico).
         - Traducir todo en un INFORME EJECUTIVO de diagnóstico de equipo.
         - Proponer focos de trabajo que luego se profundizan con el coach humano (Luis Yañez).
 
@@ -348,53 +283,29 @@ def build_prompt_team(block_name, selected_issues, team_name, team_raw_input, le
 
     instructions = textwrap.dedent(
         """
-        Estructura del informe de equipo (en español, tono ejecutivo, claro y directo):
+        Estructura del informe de equipo (tono ejecutivo, claro y directo):
 
         1. Resumen ejecutivo del conflicto / lío
-           - 3 a 7 bullets que expliquen qué está pasando en el equipo.
-           - Incluir dónde se traba, qué se repite y qué emoción predomina (sin psicologismo barato).
-
         2. Patrones de equipo y juegos invisibles
-           - Describir patrones colectivos (ej: todos culpan a otro área, nadie asume,
-             dependencia del dueño, comunicación pasivo-agresiva, etc.).
-           - Marcar contradicciones entre versiones y qué revelan sobre la cultura.
-
         3. Impacto en resultados y en el cliente
-           - Cómo este lío afecta a tiempos, calidad, errores, experiencia del cliente, clima interno.
-
         4. Oportunidades de mejora y focos de intervención
-           - 3 a 6 focos claros (ej: acordar reglas de juego entre áreas, definir quién decide qué,
-             ordenar el flujo de información, entrenar conversaciones difíciles, etc.).
-           - Explicar brevemente cada foco con lenguaje concreto.
-
         5. Recomendaciones para el trabajo con el equipo
-           - Proponer tipos de conversaciones a trabajar (sin detallar dinámicas complejas).
-           - Sugerir si conviene empezar por el dueño, por los líderes intermedios
-             o por todo el equipo junto.
-
         6. Nota de límites
-           - Aclarar que este informe es una lectura a partir de percepciones y no reemplaza
-             auditorías legales, contables ni procesos terapéuticos.
 
-        Cerrá el informe con algo como:
+        Cerrá el informe con:
         "Este diagnóstico de equipo fue generado con Mentora Process (IA) a partir de las distintas versiones
         de los integrantes, y está pensado para ser trabajado junto a un coach ejecutivo humano."
         """
     ).strip()
 
-    full_prompt = f"{intro}\n{issues_text}\n\n{team_text}\n\n{instructions}"
-    return full_prompt
+    return f"{intro}\n{issues_text}\n\n{team_text}\n\n{instructions}"
 
 
 # =========================
-# LLAMADA A LA IA (DEMO + REAL)
+# LLAMADA A LA IA
 # =========================
 
 def call_llm(prompt, mode_label="MODO DEMO"):
-    """
-    Abstrae la llamada a la IA.
-    Si no hay API key, devuelve modo demo.
-    """
     if not os.getenv("OPENAI_API_KEY"):
         demo_report = textwrap.dedent(
             f"""
@@ -402,19 +313,9 @@ def call_llm(prompt, mode_label="MODO DEMO"):
 
             Esto es un ejemplo de cómo se vería el informe.
 
-            Herramienta: Mentora Process
+            Herramienta: Mentora Process.
 
-            Acá iría el análisis ejecutivo generado por la IA, con:
-            - Resumen ejecutivo
-            - Patrones
-            - Impacto en cliente y negocio
-            - Focos de mejora
-            - Propuesta de trabajo con coach
-
-            Para activar la IA:
-            1) Instalá openai: `pip install openai`
-            2) Seteá la variable de entorno OPENAI_API_KEY
-            3) Reemplazá la lógica de demo por la llamada real a la API.
+            Acá iría el análisis ejecutivo generado por la IA.
             """
         ).strip()
         return demo_report
@@ -425,7 +326,7 @@ def call_llm(prompt, mode_label="MODO DEMO"):
         openai.api_key = os.getenv("OPENAI_API_KEY")
 
         response = openai.ChatCompletion.create(
-            model="gpt-4.1-mini",  # Cambiá por el modelo que quieras usar
+            model="gpt-4.1-mini",
             messages=[
                 {
                     "role": "system",
@@ -436,78 +337,53 @@ def call_llm(prompt, mode_label="MODO DEMO"):
             temperature=0.4,
         )
 
-        report_text = response.choices[0].message["content"]
-        return report_text
+        return response.choices[0].message["content"]
 
     except Exception as e:
         return f"Error al llamar a la IA: {e}"
 
 
 # =========================
-# UI: MODO INDIVIDUAL
+# MODOS DE USO
 # =========================
 
 def individual_mode():
-    st.subheader("🔹 Diagnóstico individual", anchor=False)
-
-    st.markdown(
-        """
-        Usá este modo cuando querés entender **tu propio rol** en el lío:
-        cómo decidís, cómo comunicás y cómo eso impacta en tu empresa o equipo.
-        """
+    st.subheader("🔹 Diagnóstico individual")
+    st.write(
+        "Usá este modo para entender tu propio rol en el lío: cómo decidís, "
+        "cómo comunicás y cómo eso impacta en tu empresa o equipo."
     )
 
-    st.divider()
-
-    # 1) Elegir bloque principal
     st.markdown("### 1️⃣ Elegí por dónde te duele más hoy")
 
     block_names = list(BLOCKS.keys())
     selected_block = st.selectbox("Bloque principal", block_names, index=0, key="ind_block")
 
     block_data = BLOCKS[selected_block]
-
-    st.markdown(
-        f"""
-        <div class="block-card">
-            <div class="block-card-title">{block_data['icon']} {selected_block}</div>
-            <div class="block-card-subtitle">{block_data['description']}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.write(f"{block_data['icon']} **{selected_block}** – {block_data['description']}")
 
     st.markdown("**¿Con cuáles de estas frases te sentís identificado?** (podés marcar más de una)")
-
     selected_issues = []
     for issue in block_data["issues"]:
-        checked = st.checkbox(issue, value=False, key=f"ind_issue_{issue}")
-        if checked:
+        if st.checkbox(issue, key=f"ind_issue_{issue}"):
             selected_issues.append(issue)
 
     if not selected_issues:
         st.info("Marcá al menos una frase que se parezca a lo que pasa en tu empresa o equipo.")
 
-    st.divider()
-
-    # 2) Preguntas de contexto
     st.markdown("### 2️⃣ Contame un poco más del contexto")
 
     context_answers = {}
-
     st.markdown("**Preguntas generales**")
     for idx, q in enumerate(GENERAL_QUESTIONS, start=1):
-        answer = st.text_area(q, key=f"ind_general_q_{idx}", height=80)
-        context_answers[q] = answer
+        ans = st.text_area(q, key=f"ind_general_q_{idx}", height=80)
+        context_answers[q] = ans
 
     st.markdown(f"**Preguntas específicas sobre {selected_block}**")
     for idx, q in enumerate(BLOCK_SPECIFIC_QUESTIONS[selected_block], start=1):
-        answer = st.text_area(q, key=f"ind_specific_{selected_block}_{idx}", height=80)
-        context_answers[q] = answer
+        ans = st.text_area(q, key=f"ind_specific_{selected_block}_{idx}", height=80)
+        context_answers[q] = ans
 
-    st.divider()
-
-    # 3) Generar informe
     st.markdown("### 3️⃣ Generar informe ejecutivo")
 
     if st.button(
@@ -524,32 +400,22 @@ def individual_mode():
         st.markdown("### 📝 Informe Mentora Process – Diagnóstico individual")
         st.write(report)
 
-        file_name = f"Informe_Mentora_Process_Individual_{selected_block.replace(' ', '_')}.txt"
+        fname = f"Informe_Mentora_Process_Individual_{selected_block.replace(' ', '_')}.txt"
         st.download_button(
             label="📥 Descargar informe en .txt",
             data=report,
-            file_name=file_name,
+            file_name=fname,
             mime="text/plain",
             key="ind_download",
         )
 
 
-# =========================
-# UI: MODO EQUIPO
-# =========================
-
 def team_mode():
-    st.subheader("👥 Síntesis rápida de equipo", anchor=False)
-
-    st.markdown(
-        """
-        Usá este modo cuando **varias personas del mismo equipo** ya dieron su versión
-        del problema (por escrito, por WhatsApp, por formulario, etc.) y querés sacar
-        un **diagnóstico del lío** al toque.
-        """
+    st.subheader("👥 Síntesis rápida de equipo")
+    st.write(
+        "Usá este modo cuando varias personas del mismo equipo ya dieron su versión "
+        "del problema (por escrito, WhatsApp, formulario, etc.) y querés sacar un diagnóstico rápido."
     )
-
-    st.divider()
 
     team_name = st.text_input("Nombre del equipo / área (opcional)", key="team_name")
 
@@ -559,35 +425,22 @@ def team_mode():
     selected_block = st.selectbox("Bloque principal", block_names, index=0, key="team_block")
 
     block_data = BLOCKS[selected_block]
-
-    st.markdown(
-        f"""
-        <div class="block-card">
-            <div class="block-card-title">{block_data['icon']} {selected_block}</div>
-            <div class="block-card-subtitle">{block_data['description']}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.write(f"{block_data['icon']} **{selected_block}** – {block_data['description']}")
 
     st.markdown("**¿Qué frases describen mejor el lío de este equipo?** (podés marcar más de una)")
-
     selected_issues = []
     for issue in block_data["issues"]:
-        checked = st.checkbox(issue, value=False, key=f"team_issue_{issue}")
-        if checked:
+        if st.checkbox(issue, key=f"team_issue_{issue}"):
             selected_issues.append(issue)
 
     if not selected_issues:
         st.info("Marcá al menos una frase que se parezca a lo que pasa en este equipo.")
 
-    st.divider()
-
     st.markdown("### 2️⃣ Pegá las versiones del equipo")
 
     team_raw_input = st.text_area(
         "Copiá acá las respuestas / mensajes / notas de los integrantes del equipo.\n"
-        "Podés separarlas con líneas como '---' o dejando espacios entre una y otra.",
+        "Podés separarlas con '---' o dejando espacios entre una y otra.",
         key="team_raw",
         height=220,
     )
@@ -597,8 +450,6 @@ def team_mode():
         key="team_leader_view",
         height=120,
     )
-
-    st.divider()
 
     st.markdown("### 3️⃣ Generar diagnóstico de equipo")
 
@@ -612,11 +463,11 @@ def team_mode():
     ):
         with st.spinner("Leyendo las versiones y generando el diagnóstico de equipo..."):
             prompt = build_prompt_team(
-                block_name=selected_block,
-                selected_issues=selected_issues,
-                team_name=team_name,
-                team_raw_input=team_raw_input,
-                leader_view=leader_view,
+                selected_block,
+                selected_issues,
+                team_name,
+                team_raw_input,
+                leader_view,
             )
             report = call_llm(prompt, mode_label="MODO EQUIPO DEMO")
 
@@ -624,11 +475,11 @@ def team_mode():
         st.markdown("### 📝 Informe Mentora Process – Diagnóstico de equipo")
         st.write(report)
 
-        file_name = f"Informe_Mentora_Process_Equipo_{selected_block.replace(' ', '_')}.txt"
+        fname = f"Informe_Mentora_Process_Equipo_{selected_block.replace(' ', '_')}.txt"
         st.download_button(
             label="📥 Descargar diagnóstico de equipo en .txt",
             data=report,
-            file_name=file_name,
+            file_name=fname,
             mime="text/plain",
             key="team_download",
         )
@@ -639,76 +490,29 @@ def team_mode():
 # =========================
 
 def main():
-    # Sidebar con logo y branding Luis + Mentora
+    # Sidebar simple con branding
     with st.sidebar:
-        st.markdown(
-            """
-            <div style="text-align:center; margin-bottom: 1rem;">
-                <div style="font-size: 0.8rem; color:#9ca3af; margin-bottom:0.4rem;">
-                    Ecosistema Mentora
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        # Si tenés un archivo mentora_logo.png en la misma carpeta se muestra
+        st.markdown("### Mentora Process")
+        st.caption("Diseñado por **Luis Yañez** – Coach Ejecutivo & Consultor.")
         try:
             st.image("mentora_logo.png", use_column_width=True)
         except Exception:
-            st.markdown(
-                "<div style='text-align:center; font-size:0.8rem; color:#6b7280;'>[Logo Mentora]</div>",
-                unsafe_allow_html=True,
-            )
-
-        st.markdown("---")
-        st.markdown(
-            """
-            **Mentora Process**  
-            <span style="font-size:0.85rem; color:#9ca3af;">
-            Diseñado por <b>Luis Yañez</b> – Coach Ejecutivo & Consultor.
-            </span>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.markdown(
-            """
-            <div class="mentora-pill">
-                <span>🧠</span> <span>Procesos · Juego interno · Cliente</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.markdown("---")
-        st.caption(
-            "Usá esta herramienta como disparador de conversación y diseño de procesos, "
-            "no como verdad absoluta."
-        )
+            st.caption("[acá va el logo Mentora]")
 
     st.title(APP_NAME)
-    st.caption(
-        "Diagnóstico de liderazgo, procesos y experiencia del cliente potenciado con IA."
-    )
+    st.caption("Diagnóstico de liderazgo, procesos y experiencia del cliente potenciado con IA.")
 
-    st.markdown(
-        """
-        Esta herramienta te ayuda a **poner en palabras el caos**, detectar patrones invisibles
-        en la forma en que dirigís, decidís y coordinás tu empresa, y traducirlo en un
-        **informe ejecutivo** para trabajar con un coach.
-        """
+    st.write(
+        "Esta herramienta te ayuda a poner en palabras el caos, detectar patrones invisibles "
+        "y traducir todo en un informe ejecutivo para trabajar en sesiones de coaching."
     )
-
-    st.divider()
 
     mode = st.radio(
         "¿Cómo querés usar Mentora Process hoy?",
         ["Diagnóstico individual", "Síntesis rápida de equipo"],
-        horizontal=True,
     )
 
-    st.divider()
+    st.write("---")
 
     if mode == "Diagnóstico individual":
         individual_mode()
@@ -716,11 +520,7 @@ def main():
         team_mode()
 
     st.markdown(
-        """
-        <div class="mentora-footer">
-            Mentora Process · Desarrollado junto a IA · Marca personal de Luis Yañez
-        </div>
-        """,
+        '<div class="mentora-footer">Mentora Process · Marca de Luis Yañez · Desarrollado junto a IA</div>',
         unsafe_allow_html=True,
     )
 
