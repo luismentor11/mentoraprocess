@@ -1,4 +1,5 @@
 import os
+import json
 import textwrap
 from datetime import datetime
 
@@ -13,6 +14,143 @@ PAGE_TITLE = f"{APP_NAME} – Diagnóstico de Liderazgo, Procesos y Cliente"
 PAGE_ICON = "🧠"
 
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout="centered")
+
+
+# =========================
+# ESTILOS CUSTOM (DARK MODE)
+# =========================
+
+def inject_custom_css():
+    st.markdown(
+        """
+        <style>
+        /* Fondo general dark */
+        .stApp {
+            background: radial-gradient(circle at top left, #020617 0, #020617 35%, #020617 100%);
+            color: #e5e7eb;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        }
+
+        /* Títulos principales */
+        h1, h2, h3, h4 {
+            color: #e5e7eb !important;
+        }
+
+        /* Parrafos */
+        p {
+            color: #cbd5f5;
+        }
+
+        /* Tarjetas de bloque */
+        .block-card {
+            padding: 0.9rem 1.1rem;
+            border-radius: 0.9rem;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: radial-gradient(circle at top left,
+                                        rgba(79, 70, 229, 0.18),
+                                        rgba(15, 23, 42, 0.96));
+            margin-bottom: 0.5rem;
+        }
+
+        .block-card-title {
+            font-weight: 600;
+            font-size: 0.98rem;
+            color: #e5e7eb;
+        }
+
+        .block-card-subtitle {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        /* TextAreas dark */
+        .stTextArea textarea {
+            background-color: #020617 !important;
+            color: #e5e7eb !important;
+            border-radius: 0.75rem !important;
+            border: 1px solid rgba(148, 163, 184, 0.6) !important;
+            font-size: 0.9rem !important;
+        }
+
+        /* Selectbox / inputs */
+        .stSelectbox div[data-baseweb="select"] > div {
+            background-color: #020617 !important;
+            border-radius: 999px !important;
+            border: 1px solid rgba(148, 163, 184, 0.6) !important;
+        }
+
+        /* Checkboxes */
+        .stCheckbox > label {
+            color: #e5e7eb !important;
+            font-size: 0.9rem;
+        }
+
+        /* Radio horizontal */
+        .stRadio > div {
+            flex-direction: row !important;
+        }
+
+        .stRadio label {
+            color: #e5e7eb !important;
+        }
+
+        /* Botones */
+        .stButton>button, .stDownloadButton>button {
+            border-radius: 999px !important;
+            border: 1px solid rgba(129, 140, 248, 0.9) !important;
+            background: linear-gradient(90deg, #4f46e5, #a855f7) !important;
+            color: white !important;
+            padding: 0.45rem 1.3rem !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+            box-shadow: 0 0 18px rgba(129, 140, 248, 0.4);
+        }
+
+        .stButton>button:disabled, .stDownloadButton>button:disabled {
+            background: #1f2933 !important;
+            border-color: #4b5563 !important;
+            box-shadow: none !important;
+        }
+
+        /* Divider más sutil */
+        hr {
+            border-color: rgba(55, 65, 81, 0.8) !important;
+        }
+
+        /* Footer invisible de Streamlit */
+        footer {visibility: hidden;}
+
+        /* Small pill */
+        .mentora-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.12rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(129, 140, 248, 0.65);
+            background: rgba(15, 23, 42, 0.9);
+            font-size: 0.7rem;
+            color: #a5b4fc;
+        }
+
+        .mentora-pill span {
+            font-size: 0.9rem;
+        }
+
+        .mentora-footer {
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+inject_custom_css()
 
 # =========================
 # DATA: BLOQUES Y DOLORES
@@ -94,25 +232,27 @@ def build_prompt_individual(block_name, selected_issues, context_answers):
     block = BLOCKS[block_name]
     today = datetime.now().strftime("%Y-%m-%d")
 
-    intro = textwrap.dedent(f"""
-    Actuás como un consultor senior en mejora de procesos, liderazgo y experiencia del cliente,
-    especialista en pymes y empresas en crecimiento. Tenés un enfoque claro, directo y ejecutivo.
+    intro = textwrap.dedent(
+        f"""
+        Actuás como un consultor senior en mejora de procesos, liderazgo y experiencia del cliente,
+        especialista en pymes y empresas en crecimiento. Tenés un enfoque claro, directo y ejecutivo.
 
-    El contexto es la herramienta llamada “Mentora Process”, que combina diagnóstico de procesos
-    visibles con lectura de patrones invisibles en la forma de dirigir, decidir y conversar en la empresa.
+        El contexto es la herramienta llamada “Mentora Process”, que combina diagnóstico de procesos
+        visibles con lectura de patrones invisibles en la forma de dirigir, decidir y conversar en la empresa.
 
-    Tu tarea:
-    - Analizar la situación de la empresa/líder desde esta mirada individual.
-    - Detectar patrones de liderazgo, comunicación y procesos.
-    - Traducir esto a un INFORME EJECUTIVO claro y accionable.
-    - Incluir una propuesta de trabajo a abordar con un coach ejecutivo humano (Luis Yañez).
+        Tu tarea:
+        - Analizar la situación de la empresa/líder desde esta mirada individual.
+        - Detectar patrones de liderazgo, comunicación y procesos.
+        - Traducir esto a un INFORME EJECUTIVO claro y accionable.
+        - Incluir una propuesta de trabajo a abordar con un coach ejecutivo humano (Luis Yañez).
 
-    FECHA DEL INFORME: {today}
-    TIPO DE USO: Diagnóstico individual
-    BLOQUE PRINCIPAL: {block_name} – {block['description']}
+        FECHA DEL INFORME: {today}
+        TIPO DE USO: Diagnóstico individual
+        BLOQUE PRINCIPAL: {block_name} – {block['description']}
 
-    DOLENCIAS PRINCIPALES QUE LA PERSONA MARCÓ:
-    """).strip()
+        DOLENCIAS PRINCIPALES QUE LA PERSONA MARCÓ:
+        """
+    ).strip()
 
     issues_text = "\n".join([f"- {issue}" for issue in selected_issues])
 
@@ -120,39 +260,45 @@ def build_prompt_individual(block_name, selected_issues, context_answers):
     for label, answer in context_answers.items():
         answers_text += f"\n{label}:\n{answer.strip()}\n"
 
-    instructions = textwrap.dedent("""
-    Estructura del informe que tenés que devolver (en español, tono ejecutivo, claro y directo):
+    instructions = textwrap.dedent(
+        """
+        Estructura del informe que tenés que devolver (en español, tono ejecutivo, claro y directo):
 
-    1. Resumen ejecutivo
-       - 3 a 5 bullet points con los hallazgos clave.
-       - Nivel de riesgo percibido en comunicación y procesos (bajo / medio / alto) y por qué.
+        1. Resumen ejecutivo
+           - 3 a 5 bullet points con los hallazgos clave.
+           - Nivel de riesgo percibido en comunicación y procesos (bajo / medio / alto) y por qué.
 
-    2. Patrones de liderazgo, comunicación y procesos
-       - Describir los patrones que observás (ej: dependencia del dueño, caos por crecimiento, tolerancia a la informalidad, evitar conflicto, etc.).
-       - Explicar cómo estos patrones impactan en resultados, equipo y cliente.
+        2. Patrones de liderazgo, comunicación y procesos
+           - Describir los patrones que observás (ej: dependencia del dueño, caos por crecimiento,
+             tolerancia a la informalidad, evitar conflicto, etc.).
+           - Explicar cómo estos patrones impactan en resultados, equipo y cliente.
 
-    3. Impacto en experiencia del cliente y en el negocio
-       - Cómo se traduce esto en la experiencia del cliente (consistencia, tiempos, errores, etc.).
-       - Riesgos: legales, operativos, de rotación, de pérdida de clientes, etc.
+        3. Impacto en experiencia del cliente y en el negocio
+           - Cómo se traduce esto en la experiencia del cliente (consistencia, tiempos, errores, etc.).
+           - Riesgos: legales, operativos, de rotación, de pérdida de clientes, etc.
 
-    4. Oportunidades y focos de mejora
-       - 3 a 5 focos concretos (ej: clarificar rol del dueño, ordenar procesos entre áreas, estructurar onboarding, usar mejor el software, etc.).
-       - Explicar brevemente cada foco (qué cambiaría y qué beneficio traería).
+        4. Oportunidades y focos de mejora
+           - 3 a 5 focos concretos (ej: clarificar rol del dueño, ordenar procesos entre áreas,
+             estructurar onboarding, usar mejor el software, etc.).
+           - Explicar brevemente cada foco (qué cambiaría y qué beneficio traería).
 
-    5. Propuesta de trabajo con coach ejecutivo
-       - Proponer entre 3 y 6 encuentros/sesiones con objetivo por sesión.
-       - Aclarar que este informe es un punto de partida y que el proceso se profundiza con acompañamiento humano.
+        5. Propuesta de trabajo con coach ejecutivo
+           - Proponer entre 3 y 6 encuentros/sesiones con objetivo por sesión.
+           - Aclarar que este informe es un punto de partida y que el proceso se profundiza con
+             acompañamiento humano.
 
-    6. Nota de límites
-       - Aclarar que esto no reemplaza asesoría legal, contable ni procesos terapéuticos.
+        6. Nota de límites
+           - Aclarar que esto no reemplaza asesoría legal, contable ni procesos terapéuticos.
 
-    Cerrá SIEMPRE el informe con algo como:
-    "Este informe fue generado con Mentora Process (IA) y está pensado para ser trabajado junto a
-    un coach ejecutivo humano, como parte de un proceso de mejora continua."
-    """).strip()
+        Cerrá SIEMPRE el informe con algo como:
+        "Este informe fue generado con Mentora Process (IA) y está pensado para ser trabajado junto a
+        un coach ejecutivo humano, como parte de un proceso de mejora continua."
+        """
+    ).strip()
 
     full_prompt = f"{intro}\n{issues_text}\n\n{answers_text}\n\n{instructions}"
     return full_prompt
+
 
 # =========================
 # FUNCIÓN PARA ARMAR PROMPT EQUIPO
@@ -162,75 +308,86 @@ def build_prompt_team(block_name, selected_issues, team_name, team_raw_input, le
     block = BLOCKS[block_name]
     today = datetime.now().strftime("%Y-%m-%d")
 
-    intro = textwrap.dedent(f"""
-    Actuás como un consultor senior en cultura, procesos y liderazgo,
-    especialista en empresas donde hay tensión entre áreas, personas y resultados.
+    intro = textwrap.dedent(
+        f"""
+        Actuás como un consultor senior en cultura, procesos y liderazgo,
+        especialista en empresas donde hay tensión entre áreas, personas y resultados.
 
-    Estás usando la herramienta “Mentora Process” en MODO EQUIPO.
-    Recibiste distintas versiones del mismo problema, contadas por varios integrantes de un equipo.
+        Estás usando la herramienta “Mentora Process” en MODO EQUIPO.
+        Recibiste distintas versiones del mismo problema, contadas por varios integrantes de un equipo.
 
-    Tu tarea:
-    - Leer esas versiones como si fueran "capas del mismo lío".
-    - Detectar patrones compartidos y contradicciones.
-    - Identificar juegos de poder, silencios, culpas y puntos ciegos (sin usar lenguaje terapéutico).
-    - Traducir todo en un INFORME EJECUTIVO de diagnóstico de equipo.
-    - Proponer focos de trabajo que luego se profundizan con el coach humano (Luis Yañez).
+        Tu tarea:
+        - Leer esas versiones como si fueran "capas del mismo lío".
+        - Detectar patrones compartidos y contradicciones.
+        - Identificar juegos de poder, silencios, culpas y puntos ciegos (sin usar lenguaje terapéutico).
+        - Traducir todo en un INFORME EJECUTIVO de diagnóstico de equipo.
+        - Proponer focos de trabajo que luego se profundizan con el coach humano (Luis Yañez).
 
-    FECHA DEL INFORME: {today}
-    TIPO DE USO: Síntesis de equipo
-    EQUIPO / ÁREA: {team_name if team_name else "No especificado"}
-    BLOQUE PRINCIPAL: {block_name} – {block['description']}
+        FECHA DEL INFORME: {today}
+        TIPO DE USO: Síntesis de equipo
+        EQUIPO / ÁREA: {team_name if team_name else "No especificado"}
+        BLOQUE PRINCIPAL: {block_name} – {block['description']}
 
-    DOLENCIAS PRINCIPALES MARCADAS PARA ESTE EQUIPO:
-    """).strip()
+        DOLENCIAS PRINCIPALES MARCADAS PARA ESTE EQUIPO:
+        """
+    ).strip()
 
     issues_text = "\n".join([f"- {issue}" for issue in selected_issues])
 
-    team_text = textwrap.dedent(f"""
-    VERSIONES DEL EQUIPO (copiadas tal cual o resumidas):
+    team_text = textwrap.dedent(
+        f"""
+        VERSIONES DEL EQUIPO (copiadas tal cual o resumidas):
 
-    {team_raw_input.strip()}
+        {team_raw_input.strip()}
 
-    MIRADA DEL LÍDER / DUEÑO / RESPONSABLE:
+        MIRADA DEL LÍDER / DUEÑO / RESPONSABLE:
 
-    {leader_view.strip()}
-    """)
+        {leader_view.strip()}
+        """
+    )
 
-    instructions = textwrap.dedent("""
-    Estructura del informe de equipo (en español, tono ejecutivo, claro y directo):
+    instructions = textwrap.dedent(
+        """
+        Estructura del informe de equipo (en español, tono ejecutivo, claro y directo):
 
-    1. Resumen ejecutivo del conflicto / lío
-       - 3 a 7 bullets que expliquen qué está pasando en el equipo.
-       - Incluir dónde se traba, qué se repite y qué emoción predomina (sin psicologismo barato).
+        1. Resumen ejecutivo del conflicto / lío
+           - 3 a 7 bullets que expliquen qué está pasando en el equipo.
+           - Incluir dónde se traba, qué se repite y qué emoción predomina (sin psicologismo barato).
 
-    2. Patrones de equipo y juegos invisibles
-       - Describir patrones colectivos (ej: todos culpan a otro área, nadie asume, dependencia del dueño, comunicación pasivo-agresiva, etc.).
-       - Marcar contradicciones entre versiones y qué revelan sobre la cultura.
+        2. Patrones de equipo y juegos invisibles
+           - Describir patrones colectivos (ej: todos culpan a otro área, nadie asume,
+             dependencia del dueño, comunicación pasivo-agresiva, etc.).
+           - Marcar contradicciones entre versiones y qué revelan sobre la cultura.
 
-    3. Impacto en resultados y en el cliente
-       - Cómo este lío afecta a tiempos, calidad, errores, experiencia del cliente, clima interno.
+        3. Impacto en resultados y en el cliente
+           - Cómo este lío afecta a tiempos, calidad, errores, experiencia del cliente, clima interno.
 
-    4. Oportunidades de mejora y focos de intervención
-       - 3 a 6 focos claros (ej: acordar reglas de juego entre áreas, definir quién decide qué, ordenar el flujo de información, entrenar conversaciones difíciles, etc.).
-       - Explicar brevemente cada foco con lenguaje concreto.
+        4. Oportunidades de mejora y focos de intervención
+           - 3 a 6 focos claros (ej: acordar reglas de juego entre áreas, definir quién decide qué,
+             ordenar el flujo de información, entrenar conversaciones difíciles, etc.).
+           - Explicar brevemente cada foco con lenguaje concreto.
 
-    5. Recomendaciones para el trabajo con el equipo
-       - Proponer dinámicas o tipos de conversaciones a trabajar (sin detallar dinámicas complejas).
-       - Sugerir si conviene empezar por el dueño, por los líderes intermedios o por todo el equipo junto.
+        5. Recomendaciones para el trabajo con el equipo
+           - Proponer tipos de conversaciones a trabajar (sin detallar dinámicas complejas).
+           - Sugerir si conviene empezar por el dueño, por los líderes intermedios
+             o por todo el equipo junto.
 
-    6. Nota de límites
-       - Aclarar que este informe es una lectura a partir de percepciones y no reemplaza auditorías legales, contables ni procesos terapéuticos.
+        6. Nota de límites
+           - Aclarar que este informe es una lectura a partir de percepciones y no reemplaza
+             auditorías legales, contables ni procesos terapéuticos.
 
-    Cerrá el informe con algo como:
-    "Este diagnóstico de equipo fue generado con Mentora Process (IA) a partir de las distintas versiones
-    de los integrantes, y está pensado para ser trabajado junto a un coach ejecutivo humano."
-    """).strip()
+        Cerrá el informe con algo como:
+        "Este diagnóstico de equipo fue generado con Mentora Process (IA) a partir de las distintas versiones
+        de los integrantes, y está pensado para ser trabajado junto a un coach ejecutivo humano."
+        """
+    ).strip()
 
     full_prompt = f"{intro}\n{issues_text}\n\n{team_text}\n\n{instructions}"
     return full_prompt
 
+
 # =========================
-# GENERAR INFORME (COMÚN)
+# LLAMADA A LA IA (DEMO + REAL)
 # =========================
 
 def call_llm(prompt, mode_label="MODO DEMO"):
@@ -239,23 +396,27 @@ def call_llm(prompt, mode_label="MODO DEMO"):
     Si no hay API key, devuelve modo demo.
     """
     if not os.getenv("OPENAI_API_KEY"):
-        demo_report = textwrap.dedent(f"""
-        [{mode_label} – SIN IA CONECTADA]
+        demo_report = textwrap.dedent(
+            f"""
+            [{mode_label} – SIN IA CONECTADA]
 
-        Esto es un ejemplo de cómo se vería el informe.
+            Esto es un ejemplo de cómo se vería el informe.
 
-        Acá iría el análisis ejecutivo generado por la IA, con:
-        - Resumen ejecutivo
-        - Patrones
-        - Impacto en cliente y negocio
-        - Focos de mejora
-        - Propuesta de trabajo con coach
+            Herramienta: Mentora Process
 
-        Para activar la IA:
-        1) Instalá openai: `pip install openai`
-        2) Seteá la variable de entorno OPENAI_API_KEY
-        3) Reemplazá la lógica de demo por la llamada real a la API.
-        """).strip()
+            Acá iría el análisis ejecutivo generado por la IA, con:
+            - Resumen ejecutivo
+            - Patrones
+            - Impacto en cliente y negocio
+            - Focos de mejora
+            - Propuesta de trabajo con coach
+
+            Para activar la IA:
+            1) Instalá openai: `pip install openai`
+            2) Seteá la variable de entorno OPENAI_API_KEY
+            3) Reemplazá la lógica de demo por la llamada real a la API.
+            """
+        ).strip()
         return demo_report
 
     try:
@@ -281,12 +442,13 @@ def call_llm(prompt, mode_label="MODO DEMO"):
     except Exception as e:
         return f"Error al llamar a la IA: {e}"
 
+
 # =========================
 # UI: MODO INDIVIDUAL
 # =========================
 
 def individual_mode():
-    st.subheader("🔹 Diagnóstico individual")
+    st.subheader("🔹 Diagnóstico individual", anchor=False)
 
     st.markdown(
         """
@@ -304,7 +466,16 @@ def individual_mode():
     selected_block = st.selectbox("Bloque principal", block_names, index=0, key="ind_block")
 
     block_data = BLOCKS[selected_block]
-    st.markdown(f"**{block_data['icon']} {selected_block}** – {block_data['description']}")
+
+    st.markdown(
+        f"""
+        <div class="block-card">
+            <div class="block-card-title">{block_data['icon']} {selected_block}</div>
+            <div class="block-card-subtitle">{block_data['description']}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown("**¿Con cuáles de estas frases te sentís identificado?** (podés marcar más de una)")
 
@@ -339,7 +510,12 @@ def individual_mode():
     # 3) Generar informe
     st.markdown("### 3️⃣ Generar informe ejecutivo")
 
-    if st.button("Generar informe individual con IA", type="primary", disabled=not selected_issues, key="ind_btn"):
+    if st.button(
+        "Generar informe individual con IA",
+        type="primary",
+        disabled=not selected_issues,
+        key="ind_btn",
+    ):
         with st.spinner("Analizando la información y generando el informe..."):
             prompt = build_prompt_individual(selected_block, selected_issues, context_answers)
             report = call_llm(prompt, mode_label="MODO INDIVIDUAL DEMO")
@@ -357,24 +533,19 @@ def individual_mode():
             key="ind_download",
         )
 
+
 # =========================
 # UI: MODO EQUIPO
 # =========================
 
 def team_mode():
-    st.subheader("👥 Síntesis rápida de equipo")
+    st.subheader("👥 Síntesis rápida de equipo", anchor=False)
 
     st.markdown(
         """
         Usá este modo cuando **varias personas del mismo equipo** ya dieron su versión
         del problema (por escrito, por WhatsApp, por formulario, etc.) y querés sacar
         un **diagnóstico del lío** al toque.
-
-        👉 Paso práctico:
-        - Le pedís a cada integrante que responda un formulario o que te mande su versión.
-        - Copiás todas las versiones en el campo de abajo (separadas por líneas o guiones).
-        - Agregás tu mirada como líder / dueño.
-        - Mentora Process te devuelve un diagnóstico de equipo para trabajar en sesión.
         """
     )
 
@@ -388,7 +559,16 @@ def team_mode():
     selected_block = st.selectbox("Bloque principal", block_names, index=0, key="team_block")
 
     block_data = BLOCKS[selected_block]
-    st.markdown(f"**{block_data['icon']} {selected_block}** – {block_data['description']}")
+
+    st.markdown(
+        f"""
+        <div class="block-card">
+            <div class="block-card-title">{block_data['icon']} {selected_block}</div>
+            <div class="block-card-subtitle">{block_data['description']}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown("**¿Qué frases describen mejor el lío de este equipo?** (podés marcar más de una)")
 
@@ -424,7 +604,12 @@ def team_mode():
 
     disabled_btn = not (selected_issues and team_raw_input.strip())
 
-    if st.button("Generar diagnóstico de equipo con IA", type="primary", disabled=disabled_btn, key="team_btn"):
+    if st.button(
+        "Generar diagnóstico de equipo con IA",
+        type="primary",
+        disabled=disabled_btn,
+        key="team_btn",
+    ):
         with st.spinner("Leyendo las versiones y generando el diagnóstico de equipo..."):
             prompt = build_prompt_team(
                 block_name=selected_block,
@@ -448,14 +633,63 @@ def team_mode():
             key="team_download",
         )
 
+
 # =========================
 # MAIN
 # =========================
 
 def main():
+    # Sidebar con logo y branding Luis + Mentora
+    with st.sidebar:
+        st.markdown(
+            """
+            <div style="text-align:center; margin-bottom: 1rem;">
+                <div style="font-size: 0.8rem; color:#9ca3af; margin-bottom:0.4rem;">
+                    Ecosistema Mentora
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Si tenés un archivo mentora_logo.png en la misma carpeta se muestra
+        try:
+            st.image("mentora_logo.png", use_column_width=True)
+        except Exception:
+            st.markdown(
+                "<div style='text-align:center; font-size:0.8rem; color:#6b7280;'>[Logo Mentora]</div>",
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("---")
+        st.markdown(
+            """
+            **Mentora Process**  
+            <span style="font-size:0.85rem; color:#9ca3af;">
+            Diseñado por <b>Luis Yañez</b> – Coach Ejecutivo & Consultor.
+            </span>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            """
+            <div class="mentora-pill">
+                <span>🧠</span> <span>Procesos · Juego interno · Cliente</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown("---")
+        st.caption(
+            "Usá esta herramienta como disparador de conversación y diseño de procesos, "
+            "no como verdad absoluta."
+        )
+
     st.title(APP_NAME)
     st.caption(
-        "Mentora Process: diagnóstico de liderazgo, procesos y experiencia del cliente potenciado con IA."
+        "Diagnóstico de liderazgo, procesos y experiencia del cliente potenciado con IA."
     )
 
     st.markdown(
@@ -480,6 +714,15 @@ def main():
         individual_mode()
     else:
         team_mode()
+
+    st.markdown(
+        """
+        <div class="mentora-footer">
+            Mentora Process · Desarrollado junto a IA · Marca personal de Luis Yañez
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":
