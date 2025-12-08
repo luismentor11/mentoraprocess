@@ -16,84 +16,47 @@ st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout="centered"
 
 
 # =========================
-# ESTILOS CUSTOM (LOOK CORPORATIVO DARK)
+# ESTILOS (FONDO CLARO, LOOK CORPORATIVO)
 # =========================
 
 def inject_custom_css():
     st.markdown(
         """
         <style>
-        /* Contenedor principal centrado y más angosto */
+        /* Contenedor principal centrado */
         .block-container {
             max-width: 900px !important;
             padding-top: 2rem !important;
             padding-bottom: 2rem !important;
         }
 
-        /* Fondo general dark con leve gradiente */
+        body {
+            background-color: #f3f4f6;
+        }
+
         .stApp {
-            background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
-            color: #e5e7eb;
+            background-color: #f3f4f6;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
         }
 
         h1, h2, h3, h4 {
-            color: #e5e7eb !important;
+            color: #111827 !important;
         }
 
         p, label, span, div {
             font-size: 0.94rem;
         }
 
-        /* Hero title */
-        .mentora-hero-title {
-            font-size: 2rem;
-            font-weight: 650;
-            letter-spacing: -0.03em;
-            margin-bottom: 0.15rem;
+        /* Secciones tipo tarjeta */
+        .mentora-section {
+            background: #ffffff;
+            border-radius: 1rem;
+            border: 1px solid #e5e7eb;
+            padding: 1.1rem 1.2rem;
+            margin-bottom: 1.2rem;
         }
 
-        .mentora-hero-subtitle {
-            font-size: 0.98rem;
-            color: #9ca3af;
-        }
-
-        /* Textareas & inputs */
-        .stTextArea textarea {
-            background-color: #020617 !important;
-            color: #e5e7eb !important;
-            border-radius: 0.75rem !important;
-            border: 1px solid rgba(148, 163, 184, 0.6) !important;
-            font-size: 0.9rem !important;
-        }
-
-        .stTextInput input {
-            background-color: #020617 !important;
-            color: #e5e7eb !important;
-            border-radius: 999px !important;
-            border: 1px solid rgba(148, 163, 184, 0.6) !important;
-            font-size: 0.9rem !important;
-            padding: 0.45rem 0.9rem !important;
-        }
-
-        .stSelectbox div[data-baseweb="select"] > div {
-            background-color: #020617 !important;
-            border-radius: 999px !important;
-            border: 1px solid rgba(148, 163, 184, 0.6) !important;
-            font-size: 0.9rem !important;
-        }
-
-        .stCheckbox > label {
-            color: #e5e7eb !important;
-            font-size: 0.9rem;
-        }
-
-        .stRadio label {
-            color: #e5e7eb !important;
-            font-size: 0.9rem;
-        }
-
-        /* Botones */
+        /* Botones con degradé Mentora */
         .stButton>button, .stDownloadButton>button {
             border-radius: 999px !important;
             border: 1px solid rgba(129, 140, 248, 0.9) !important;
@@ -102,34 +65,22 @@ def inject_custom_css():
             padding: 0.45rem 1.3rem !important;
             font-weight: 600 !important;
             font-size: 0.9rem !important;
-            box-shadow: 0 0 18px rgba(129, 140, 248, 0.4);
         }
 
         .stButton>button:disabled, .stDownloadButton>button:disabled {
-            background: #111827 !important;
-            border-color: #4b5563 !important;
+            background: #e5e7eb !important;
+            border-color: #d1d5db !important;
+            color: #9ca3af !important;
             box-shadow: none !important;
-            color: #6b7280 !important;
         }
 
-        /* Cards suaves para secciones */
-        .mentora-section {
-            background: rgba(15, 23, 42, 0.92);
-            border-radius: 1.1rem;
-            border: 1px solid rgba(148, 163, 184, 0.35);
-            padding: 1.1rem 1.2rem;
-            margin-bottom: 1.2rem;
+        /* Inputs algo más prolijos */
+        .stTextInput input {
+            border-radius: 999px !important;
         }
 
-        .mentora-section h3 {
-            margin-top: 0;
-        }
-
-        /* Línea divisoria suave */
-        hr {
-            border: none;
-            border-top: 1px solid rgba(55, 65, 81, 0.8);
-            margin: 1.2rem 0;
+        .stSelectbox div[data-baseweb="select"] > div {
+            border-radius: 999px !important;
         }
 
         /* Footer branding */
@@ -139,21 +90,6 @@ def inject_custom_css():
             color: #6b7280;
             text-align: center;
         }
-
-        /* Pill pequeño */
-        .mentora-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.12rem 0.6rem;
-            border-radius: 999px;
-            border: 1px solid rgba(129, 140, 248, 0.65);
-            background: rgba(15, 23, 42, 0.95);
-            font-size: 0.7rem;
-            color: #a5b4fc;
-            margin-bottom: 0.4rem;
-        }
-
         </style>
         """,
         unsafe_allow_html=True,
@@ -392,7 +328,7 @@ def call_llm(prompt, mode_label="MODO DEMO"):
 
 
 # =========================
-# MODOS DE USO
+# MODOS DE USO (UI)
 # =========================
 
 def individual_mode():
@@ -546,31 +482,22 @@ def team_mode():
 # =========================
 
 def main():
-    # HEADER con logo + título (sin sidebar)
+    # Header simple con logo + título
     col_logo, col_text = st.columns([1, 3])
 
     with col_logo:
         try:
             st.image("mentora_logo.png", width=90)
         except Exception:
-            st.markdown(
-                "<div style='width:90px;height:90px;border-radius:999px;border:1px solid #4b5563;"
-                "display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#6b7280;'>Logo Mentora</div>",
-                unsafe_allow_html=True,
-            )
+            st.write("Mentora")
 
     with col_text:
-        st.markdown('<div class="mentora-pill">🧠 Herramienta de diagnóstico estratégico</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="mentora-hero-title">{APP_NAME}</div>', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="mentora-hero-subtitle">'
-            'Diagnóstico de liderazgo, procesos y experiencia del cliente potenciado con IA, '
-            'para conversaciones serias con dueños y gerentes.'
-            '</div>',
-            unsafe_allow_html=True,
+        st.markdown(f"### {APP_NAME}")
+        st.caption(
+            "Herramienta de diagnóstico estratégico para dueños y gerentes: "
+            "liderazgo, procesos y experiencia del cliente."
         )
 
-    st.write("")
     st.write(
         "En pocos minutos, Mentora Process te ayuda a ordenar el caos, ponerle nombre a los patrones "
         "que se repiten y generar un informe ejecutivo listo para trabajar en sesión."
@@ -590,7 +517,6 @@ def main():
     else:
         team_mode()
 
-    # Branding al final
     st.markdown(
         """
         <div class="mentora-footer">
