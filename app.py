@@ -23,8 +23,8 @@ st.markdown("""
 
 ### Módulos incluidos en esta demo
 
-1. **Diagnóstico / Process**  
-   Un espacio para entender el contexto, la situación actual y los puntos ciegos.
+1. **[Diagnóstico / Process](./?page=1_Process)**  
+   Espacio para analizar el contexto, los puntos ciegos y los desafíos actuales.
 
 2. **🎭 Mentora Roleplay Coach (voz + texto)**  
    Un simulador que permite practicar conversaciones reales, con tres estilos:
