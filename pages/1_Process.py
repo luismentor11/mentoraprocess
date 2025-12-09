@@ -141,7 +141,7 @@ preg7 = st.text_area("7. ¿Qué decisión venís posponiendo que ya sabés que d
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------------------------------
-# ----------- ANÁLISIS + PDF ----------------
+# ----------- ANÁLISIS + DEEP INSIGHTS + PDF
 # ------------------------------------------
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -152,6 +152,7 @@ if st.button("📌 Generar análisis"):
     else:
         st.success("Diagnóstico generado con éxito.")
 
+        # ----- ANÁLISIS BÁSICO -----
         st.markdown("### 📊 Análisis de Tu Situación (Mentora Insights)")
         st.markdown(f"""
 **🎯 Objetivo:**  
@@ -176,7 +177,58 @@ if st.button("📌 Generar análisis"):
 {preg7 or "*No declarado*"}
         """)
 
-        # Generar PDF
+        # ----- DEEP INSIGHTS -----
+        st.markdown("### 🧠 Deep Insights — Lectura Ontológica")
+
+        insights = []
+
+        # 1 — Objetivo
+        if preg1 and len(preg1) < 30:
+            insights.append("Tu objetivo aparece poco definido. Cuando la meta es ambigua, la acción se vuelve dispersa.")
+        elif preg1:
+            insights.append("Tu objetivo tiene estructura. Falta alinear conversaciones y acciones para sostenerlo.")
+
+        # 2 — Bloqueos
+        if preg2 and ("siempre" in preg2.lower() or "repite" in preg2.lower()):
+            insights.append("Detecto un patrón repetitivo. Los patrones no se rompen con esfuerzo sino con nuevas conversaciones.")
+        elif preg2:
+            insights.append("El bloqueo parece situacional, no estructural. Con una intervención precisa puede resolverse rápido.")
+
+        # 3 — Conversación evitada
+        if preg3:
+            insights.append("La conversación que evitás es el eje real del conflicto. Lo que no se conversa, se cronifica.")
+        else:
+            insights.append("La ausencia de una conversación clara indica que el problema aún no tomó forma lingüística.")
+
+        # 4 — Emoción predominante
+        if preg4:
+            lower = preg4.lower()
+            if "ans" in lower:
+                insights.append("La ansiedad muestra exceso de futuro y falta de estructura en el presente.")
+            elif "eno" in lower:
+                insights.append("El enojo revela vulneración de límites personales no expresados.")
+            elif "cans" in lower or "agot" in lower:
+                insights.append("El cansancio indica acumulación de decisiones no tomadas.")
+            else:
+                insights.append("Tu emoción es un mensaje del sistema: escucharlo ordena la acción.")
+
+        # 5 — Cambio clave
+        if preg5:
+            insights.append("El cambio clave que nombrás es un movimiento de alto retorno. Si se ejecuta, reorganiza todo el sistema.")
+
+        # 6 — Fortalezas
+        if preg6:
+            insights.append("Tus fortalezas están subutilizadas. Cuando no se activan, aparece frustración o estancamiento.")
+
+        # 7 — Decisión postergada
+        if preg7:
+            insights.append("La decisión postergada es el punto de quiebre. Lo evitado hoy se convierte en costo mañana.")
+
+        # Mostrar insights
+        for insight in insights:
+            st.markdown(f"🔹 {insight}")
+
+        # ----- PDF -----
         respuestas = {
             "🎯 Objetivo": preg1 or "No definido",
             "🧱 Bloqueos": preg2 or "No especificado",
