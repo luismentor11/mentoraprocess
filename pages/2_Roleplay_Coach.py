@@ -34,6 +34,13 @@ h1 {
     font-size: 1.05rem;
     font-weight: 600;
 }
+.roleplay-btn {
+    background: #4F46E5; 
+    padding: 8px 15px; 
+    border-radius: 10px; 
+    color: white; 
+    font-weight: 600;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -42,10 +49,58 @@ h1 {
 # ------------------------------------------
 
 params = st.query_params
-
 conflicto_recibido = None
+
 if "conflicto" in params:
     conflicto_recibido = unquote(params["conflicto"])
+
+# ------------------------------------------
+# ----------- CLASIFICADOR AUTOMÁTICO -------
+# ------------------------------------------
+
+def clasificar_conflicto(texto):
+    if not texto:
+        return "General", []
+
+    t = texto.lower()
+
+    # Liderazgo / empleados
+    if any(x in t for x in ["empleado", "equipo", "personal", "trabajador", "colaborador"]):
+        return "Liderazgo y Gestión de Personas", [
+            "Charla de alineación y expectativas",
+            "Feedback correctivo claro y firme",
+            "Cortar patrón repetitivo y reestablecer autoridad"
+        ]
+
+    # Socios
+    if any(x in t for x in ["socio", "sociedad", "decisiones", "acuerdos"]):
+        return "Socios y Negociación Estratégica", [
+            "Definición de roles y toma de decisiones",
+            "Alineación de visión del negocio",
+            "Negociación de responsabilidades"
+        ]
+
+    # Clientes / ventas
+    if any(x in t for x in ["cliente", "venta", "presupuesto", "queja"]):
+        return "Clientes y Manejo Comercial", [
+            "Negociación de precio / objeciones",
+            "Conversación de reclamo difícil",
+            "Cierre comercial con presión"
+        ]
+
+    # Productividad / burnout / emocional
+    if any(x in t for x in ["cans", "agot", "estres", "tiempo", "anquietud", "ansiedad"]):
+        return "Gestión Emocional y Productividad", [
+            "Pedido de ayuda / redistribución de carga",
+            "Poner límites sin culpa",
+            "Reestructurar tiempos y prioridades"
+        ]
+
+    return "Conversación General", [
+        "Clarificación de expectativas",
+        "Expresión honesta sin conflicto",
+        "Negociación simple"
+    ]
 
 # ------------------------------------------
 # ----------- HEADER -------------------------
@@ -71,6 +126,25 @@ else:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
+
+# ------------------------------------------
+# ----------- CLASIFICACIÓN AUTOMÁTICA ------
+# ------------------------------------------
+
+if tema:
+    categoria, escenarios = clasificar_conflicto(tema)
+
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("🧭 Tipo de conversación detectada automáticamente")
+    st.success(categoria)
+
+    st.markdown("### Escenarios recomendados:")
+    for i, esc in enumerate(escenarios, 1):
+        st.markdown(f"**{i}. {esc}**")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
 # ------------------------------------------
 # ----------- ELEGIR ESTILO -----------------
 # ------------------------------------------
@@ -88,8 +162,9 @@ modo = st.radio(
 )
 st.markdown('</div>', unsafe_allow_html=True)
 
+
 # ------------------------------------------
-# ----------- ROLEPLAY ----------------------
+# ----------- CHAT ROLEPLAY -----------------
 # ------------------------------------------
 
 st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -98,13 +173,13 @@ st.subheader("💬 Chat de Roleplay")
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
 
-# Mostrar mensajes anteriores
+# Mostrar historial
 for m in st.session_state["messages"]:
     with st.chat_message(m["role"]):
         st.write(m["content"])
 
 # ------------------------------------------
-# ----------- GENERAR RESPUESTA -------------
+# ----------- GENERAR RESPUESTA IA ----------
 # ------------------------------------------
 
 if prompt := st.chat_input("Escribí tu mensaje para iniciar o continuar el roleplay..."):
@@ -112,18 +187,19 @@ if prompt := st.chat_input("Escribí tu mensaje para iniciar o continuar el role
     st.session_state["messages"].append({"role": "user", "content": prompt})
 
     system_prompt = f"""
-    Estás actuando como un simulador de conversaciones profesionales llamado Mentora Roleplay Coach.
+    Estás actuando como un simulador conversacional profesional llamado Mentora Roleplay Coach.
 
-    Tema de la conversación: {tema}
-
+    Tema principal: {tema}
+    Categoría detectada: {categoria}
+    Escenarios recomendados: {escenarios}
     Modo seleccionado: {modo}
 
     Reglas:
     - Respondé como la contraparte real en esa conversación.
-    - Adaptate al tono del modo elegido.
-    - Si el usuario se traba, ofrecé alternativas.
-    - No des discursos largos; mantené agilidad conversacional.
-    - Siempre devolvé una pregunta que haga avanzar el roleplay.
+    - Ajustate al modo elegido (suave, directo o brutalidad productiva).
+    - Ayudá a profundizar con preguntas.
+    - No sermonees, no des monólogos.
+    - La conversación debe avanzar hacia claridad y resolución.
     """
 
     try:
@@ -143,7 +219,7 @@ if prompt := st.chat_input("Escribí tu mensaje para iniciar o continuar el role
             st.write(bot_reply)
 
     except Exception as e:
-        st.error("Error generando respuesta. Revisá tu API Key o el modelo seleccionado.")
+        st.error("Error generando respuesta. Revisá tu API key o el modelo.")
         st.stop()
 
 st.markdown('</div>', unsafe_allow_html=True)
