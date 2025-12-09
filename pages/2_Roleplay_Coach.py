@@ -1,133 +1,173 @@
 import os
 import streamlit as st
 from openai import OpenAI
+import tempfile
+import base64
 
-# ---------------- CONFIGURACIÓN BÁSICA ----------------
+# ---------------- CONFIG ----------------
 st.set_page_config(
     page_title="Mentora Roleplay Coach",
     page_icon="🎭",
     layout="centered"
 )
 
-st.title("🎭 Mentora Roleplay Coach")
-st.caption("Simulación inteligente de conversaciones profesionales")
+st.title("🎭 Mentora Roleplay Coach — Versión con Voz")
+st.caption("Hablá con el coach. Conversación en tiempo real, simulación realista.")
 
 st.markdown("""
-Este módulo te ayuda a practicar conversaciones importantes:
-- Dar feedback difícil  
-- Negociar con clientes  
-- Manejar conversaciones con tu jefe  
-- Resolver conflictos con tu equipo  
+### Podés usar:
+- 🎤 **Voz** (recomendado)  
+- ⌨️ **Texto tradicional**
 
-Primero entendemos tu contexto y luego simulamos la conversación en vivo.
+Cuando hables, el coach entiende tu intención y responde con voz y texto.
 """)
 
 # ---------------- API KEY ----------------
-api_key = st.text_input(
-    "Colocá tu OpenAI API Key",
-    type="password",
-    help="También podés configurar la variable de entorno OPENAI_API_KEY."
-)
+api_key = st.secrets.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
 
 if not api_key:
-    api_key = os.getenv("OPENAI_API_KEY")
-
-if not api_key:
-    st.warning("⚠️ Falta la API Key. Ingresala arriba para continuar.")
+    st.error("⚠️ Falta la API Key. Cargala en *Secrets* de Streamlit Cloud.")
     st.stop()
 
 client = OpenAI(api_key=api_key)
 
-# ---------------- ESTADO DE SESIÓN ----------------
+# ---------------- ESTADO ----------------
 if "roleplay_messages" not in st.session_state:
     st.session_state.roleplay_messages = [
         {
             "role": "system",
             "content": """
-Sos **Mentora Roleplay Coach**, experto en conversaciones difíciles,
-negociación, liderazgo, ventas y comunicación profesional.
+Sos Mentora Roleplay Coach. Trabajás con voice + texto.
+Sos directo, empático, brutal honesto, estilo argentino.
 
-SEGUIDO ESTE FLUJO SIEMPRE:
+FLUJO:
+1. Diagnóstico con preguntas cortas.
+2. Resumen del escenario.
+3. Simulación realista (modo personaje).
+4. Feedback cuando el usuario diga: pausa / feedback / cerrar.
 
-FASE 1 — DIAGNÓSTICO
-Hacé entre 3 y 5 preguntas (una por mensaje):
-- ¿Cuál es tu rol? (líder, vendedor, empleado, socio…)
-- ¿Con quién querés practicar? (jefe, cliente, colaborador…)
-- ¿Qué conversación puntual querés entrenar?
-- ¿Qué te incomoda o te da miedo de esta situación?
-- ¿Qué resultado concreto querés lograr?
-
-Cuando tengas claridad, decí:
-“Listo, ya tengo el escenario claro. Ahora lo resumo y después arrancamos la simulación.”
-
-FASE 2 — DISEÑO DEL ESCENARIO
-Resumí en 4–6 líneas:
-- contexto
-- roles (vos y el personaje)
-- objetivo de la conversación
-- tono (suave / realista / brutal honesto)
-
-Luego preguntá:
-“¿Querés comenzar la simulación?”
-
-FASE 3 — ROLEPLAY (simulación)
-- Entrá EN PERSONAJE.
-- Respuestas cortas, naturales.
-- Usá lenguaje argentino si el usuario lo usa.
-- No aclares que sos IA.
-
-FASE 4 — FEEDBACK
-Si el usuario dice “pausa”, “feedback” o “cerrar”:
-- Salí del personaje.
-- Resumí:
-  - 3 fortalezas
-  - 3 áreas de mejora
-  - 3 recomendaciones prácticas
-Preguntá si quiere repetir con más dificultad o crear un escenario nuevo.
+Respondé SIEMPRE en texto + un mensaje breve para TTS.
 """
         },
         {
             "role": "assistant",
-            "content": "Hola, soy Mentora Roleplay Coach 🎭. ¿Qué conversación te gustaría practicar hoy?"
+            "content": "Hola, ¿qué conversación querés practicar hoy?"
         }
     ]
 
-# ---------------- MOSTRAR HISTORIAL ----------------
+
+# ---------------- FUNCIONES DE AUDIO ----------------
+
+def play_audio_from_bytes(audio_bytes):
+    """Reproduce audio en Streamlit desde bytes sin archivos externos."""
+    b64 = base64.b64encode(audio_bytes).decode()
+    audio_html = f"""
+        <audio controls autoplay>
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+        </audio>
+    """
+    st.markdown(audio_html, unsafe_allow_html=True)
+
+
+def tts(text):
+    """Convierte texto en audio (voz natural OpenAI)."""
+    response = client.audio.speech.create(
+        model="gpt-4o-mini-tts",
+        voice="alloy",
+        input=text
+    )
+    return response.read()
+
+
+def transcribe(audio_file):
+    """Convierte voz a texto (Whisper)."""
+    transcript = client.audio.transcriptions.create(
+        model="whisper-1",
+        file=audio_file
+    )
+    return transcript.text
+
+
+# ---------------- HISTORIAL ----------------
+st.subheader("💬 Conversación")
+
 for msg in st.session_state.roleplay_messages:
     if msg["role"] == "system":
         continue
     with st.chat_message("assistant" if msg["role"] == "assistant" else "user"):
         st.markdown(msg["content"])
 
-# ---------------- INPUT DEL USUARIO ----------------
-user_input = st.chat_input("Escribí acá para hablar con el coach...")
 
-if user_input:
-    with st.chat_message("user"):
-        st.markdown(user_input)
+# ---------------- INPUT DE VOZ ----------------
+st.subheader("🎤 Hablar con el Coach")
 
-    st.session_state.roleplay_messages.append({"role": "user", "content": user_input})
+audio = st.audio_input("Apretá para grabar")
 
+if audio is not None:
+    st.write("⏳ Procesando audio...")
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp.write(audio.read())
+        audio_path = tmp.name
+
+    # transcribir
+    user_text = transcribe(audio_path)
+
+    st.session_state.roleplay_messages.append({"role": "user", "content": user_text})
+    st.chat_message("user").markdown(f"🎤 **Vos dijiste:** {user_text}")
+
+    # responder
     with st.chat_message("assistant"):
-        with st.spinner("Procesando..."):
+        with st.spinner("Pensando respuesta..."):
             response = client.chat.completions.create(
-                model="gpt-4.1-mini",
+                model="gpt-4.1",
                 messages=st.session_state.roleplay_messages,
                 temperature=0.8
             )
-            reply = response.choices[0].message.content
 
-            st.markdown(reply)
+            ai_text = response.choices[0].message.content
+            st.markdown(ai_text)
+
             st.session_state.roleplay_messages.append(
-                {"role": "assistant", "content": reply}
+                {"role": "assistant", "content": ai_text}
             )
 
-# ---------------- SIDEBAR ----------------
-st.sidebar.subheader("⚙️ Controles")
+            # generar voz
+            audio_bytes = tts(ai_text)
+            play_audio_from_bytes(audio_bytes)
 
-if st.sidebar.button("🔄 Reiniciar roleplay"):
+
+# ---------------- INPUT DE TEXTO ----------------
+text_input = st.chat_input("O escribí acá la respuesta...")
+
+if text_input:
+    st.session_state.roleplay_messages.append({"role": "user", "content": text_input})
+    st.chat_message("user").markdown(text_input)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Pensando respuesta..."):
+            response = client.chat.completions.create(
+                model="gpt-4.1",
+                messages=st.session_state.roleplay_messages,
+                temperature=0.8
+            )
+
+            ai_text = response.choices[0].message.content
+            st.markdown(ai_text)
+
+            st.session_state.roleplay_messages.append(
+                {"role": "assistant", "content": ai_text}
+            )
+
+            # voz
+            audio_bytes = tts(ai_text)
+            play_audio_from_bytes(audio_bytes)
+
+
+# ---------------- SIDEBAR ----------------
+st.sidebar.subheader("⚙️ Opciones")
+if st.sidebar.button("🔄 Reiniciar conversación"):
     st.session_state.roleplay_messages = [
         st.session_state.roleplay_messages[0],
         {"role": "assistant", "content": "Reiniciamos. ¿Qué conversación querés practicar ahora?"}
     ]
-    st.experimental_rerun()
+    st.rerun()
