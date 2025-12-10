@@ -9,251 +9,383 @@ st.set_page_config(
     layout="centered"
 )
 
-# =========================
-# INTRO MENTORA (AL HUESO)
-# =========================
 st.title("🧠 Mentora Process")
 st.subheader("Diagnóstico del sistema humano de la empresa")
 st.write(
-    "Esta herramienta muestra cómo está funcionando hoy la empresa a nivel humano: "
-    "liderazgo, roles, comunicación, clima interno y experiencia del cliente. "
-    "El objetivo es darte un mapa claro, directo y accionable para ver qué está pasando "
-    "y qué conviene ordenar primero."
+    "Esta herramienta te ayuda a ver cómo está funcionando hoy la empresa a nivel humano: "
+    "energía, vínculos, organización interna y experiencia del cliente. "
+    "El objetivo es darte un mapa claro y acciones concretas para los próximos 30 días."
 )
 
 # =========================
-# CLASIFICACIÓN
+# HELPERS
 # =========================
-def clasificar_nivel(p):
+
+def clasificar_nivel_bloque(p):
     if p <= 2:
         return "Bajo"
     elif p <= 5:
         return "Medio"
     return "Alto"
 
-# =========================
-# FUNCIÓN PRINCIPAL
-# =========================
-def analizar_respuestas(r):
-    familias = {
-        "Poder y vínculos": 0,
-        "Liderazgo y energía": 0,
-        "Clima y conversaciones": 0,
-        "Operación humana": 0,
-        "Cliente como espejo": 0,
-    }
 
-    # --- Scoring resumido y efectivo ---
-    if r["q1"] in ["Cansado pero comprometido", "Frustrado, siento que sostengo demasiado"]:
-        familias["Liderazgo y energía"] += 3
-    elif r["q1"] == "Ansioso, todo es urgente":
-        familias["Liderazgo y energía"] += 2
-        familias["Operación humana"] += 1
-    elif r["q1"] == "Desconectado / a distancia":
-        familias["Poder y vínculos"] += 2
-        familias["Liderazgo y energía"] += 2
+def clasificar_madurez(niveles):
+    altos = sum(1 for n in niveles.values() if n == "Alto")
+    medios = sum(1 for n in niveles.values() if n == "Medio")
+    bajos = sum(1 for n in niveles.values() if n == "Bajo")
 
-    if r["q3"] == "Esperás a ver si se acomoda solo":
-        familias["Liderazgo y energía"] += 2
-        familias["Clima y conversaciones"] += 1
-    elif r["q3"] == "Buscás consenso para no quedar mal":
-        familias["Poder y vínculos"] += 1
-        familias["Clima y conversaciones"] += 1
-    elif r["q3"] == "Te hacés cargo solo y seguís":
-        familias["Liderazgo y energía"] += 2
+    if altos >= 3:
+        nivel = "Nivel 1 – Sobrevivencia"
+        descripcion = (
+            "La empresa está funcionando en modo sobrevivencia. El sistema humano está saturado, "
+            "los temas se apagan a último momento y hay poco espacio real para pensar y ordenar."
+        )
+    elif altos == 2 and medios >= 2:
+        nivel = "Nivel 2 – Dependencia"
+        descripcion = (
+            "La empresa depende demasiado de pocas personas clave. El resto del sistema se adapta, "
+            "pero con desgaste, confusión y tensiones crecientes."
+        )
+    elif altos <= 2 and medios >= 2:
+        nivel = "Nivel 3 – Caos funcional"
+        descripcion = (
+            "La empresa funciona, pero con esfuerzo extra, repitiendo errores y sosteniendo tensiones "
+            "que se podrían evitar si se ordenan algunas bases."
+        )
+    elif altos == 0 and medios >= 1:
+        nivel = "Nivel 4 – Orden creciente"
+        descripcion = (
+            "La empresa está en un proceso de orden. Hay temas por trabajar, pero el sistema humano tiene "
+            "base para sostener cambios y mejoras."
+        )
+    else:
+        nivel = "Nivel 5 – Madurez humana"
+        descripcion = (
+            "La empresa muestra un nivel de madurez humana alto: se puede hablar, decidir y ordenar sin "
+            "entrar en modo crisis permanente."
+        )
 
-    if r["q5"] == "Niño (reactiva)":
-        familias["Clima y conversaciones"] += 2
-        familias["Poder y vínculos"] += 1
-    elif r["q5"] == "Adolescente (discute, desordena)":
-        familias["Clima y conversaciones"] += 2
-        familias["Liderazgo y energía"] += 1
-    elif r["q5"] == "Adulto quemado (agotado)":
-        familias["Liderazgo y energía"] += 2
-        familias["Operación humana"] += 1
+    return nivel, descripcion
 
-    if r["q6"] in ["Se habla tarde y con bronca", "Se chusmea por atrás", "No se habla, se acumula"]:
-        familias["Clima y conversaciones"] += 3
 
-    if r["q7"] in ["Yo hago lo que puedo", "No me pagan para pensar"]:
-        familias["Clima y conversaciones"] += 2
-        familias["Operación humana"] += 1
-    if r["q7"] == "Si no estoy yo, esto no sale":
-        familias["Liderazgo y energía"] += 2
-        familias["Poder y vínculos"] += 1
+def generar_acciones(bloques_puntaje, niveles_bloque, nivel_madurez):
+    acciones = []
 
-    if r["q8"]:
-        familias["Operación humana"] += 2
-        familias["Clima y conversaciones"] += 1
+    # bloque con más tensión
+    bloque_mayor_tension = max(bloques_puntaje, key=bloques_puntaje.get)
 
-    if r["q9"] == "Están claros, pero no se respetan":
-        familias["Poder y vínculos"] += 1
-        familias["Clima y conversaciones"] += 1
-    elif r["q9"] in ["Son difusos", "Todos hacen un poco de todo"]:
-        familias["Operación humana"] += 2
+    if bloque_mayor_tension == "Energía del sistema":
+        acciones.append(
+            "Definir y comunicar claramente qué temas NO se van a tomar en los próximos 30 días para bajar carga y recuperar energía."
+        )
+        acciones.append(
+            "Acordar con el equipo 1 espacio fijo por semana (30 a 45 minutos) para revisar prioridades y sacar temas de la cabeza al papel."
+        )
+    elif bloque_mayor_tension == "Vínculos y comunicación":
+        acciones.append(
+            "Elegir 2 conversaciones pendientes importantes y ponerles fecha, formato y responsables para tenerlas en los próximos 30 días."
+        )
+        acciones.append(
+            "Definir una regla básica de comunicación interna (por ejemplo: lo que se habla de alguien, se habla con esa persona)."
+        )
+    elif bloque_mayor_tension == "Organización y claridad":
+        acciones.append(
+            "Definir por escrito qué corresponde y qué no corresponde a cada rol clave, y revisarlo con las personas involucradas."
+        )
+        acciones.append(
+            "Detectar 1 error repetido en la operación y documentar un paso a paso simple para reducirlo o evitarlo."
+        )
+    else:  # Cliente como espejo
+        acciones.append(
+            "Mapear 1 recorrido típico del cliente (desde que entra en contacto hasta que se va) y marcar dónde se genera más fricción o demora."
+        )
+        acciones.append(
+            "Acordar una respuesta estándar clara y simple para las quejas más frecuentes de los clientes."
+        )
 
-    if r["q11"] == "Buen trato, pero demoras":
-        familias["Operación humana"] += 2
-        familias["Cliente como espejo"] += 2
-    elif r["q11"] == "Defensivo y tenso":
-        familias["Cliente como espejo"] += 3
-        familias["Clima y conversaciones"] += 2
+    # acción extra si la madurez es baja
+    if "Nivel 1" in nivel_madurez or "Nivel 2" in nivel_madurez:
+        acciones.append(
+            "Poner en agenda una reunión de revisión general del sistema humano (no de números), para ordenar decisiones y prioridades."
+        )
 
-    if r["q12"] == "Profesionales / técnicos":
-        familias["Cliente como espejo"] += 2
-        familias["Liderazgo y energía"] += 1
-    elif r["q12"] == "Dirección":
-        familias["Cliente como espejo"] += 1
-        familias["Poder y vínculos"] += 1
+    return acciones
 
-    if r["q13"] == "No":
-        familias["Poder y vínculos"] += 2
-        familias["Operación humana"] += 1
-
-    # CLASIFICACIÓN FINAL
-    mapa = {k: clasificar_nivel(v) for k, v in familias.items()}
-    dominante = max(familias, key=familias.get)
-
-    # JUEGO HUMANO
-    juegos = {
-        "Poder y vínculos": "Hay decisiones que no se toman y roles que no están ordenados.",
-        "Liderazgo y energía": "El liderazgo está sosteniendo demasiado, con desgaste y poca claridad.",
-        "Clima y conversaciones": "Se evita hablar a tiempo y los temas se acumulan hasta explotar.",
-        "Operación humana": "La empresa está en modo incendio: problemas repetidos y tiempos desordenados.",
-        "Cliente como espejo": "El cliente recibe el impacto del desorden interno.",
-    }
-    juego = juegos[dominante]
-
-    # ACCIONES CONCRETAS MENTORA
-    focos = []
-
-    if familias["Liderazgo y energía"] >= 3:
-        focos.append("Definir las 3 decisiones que el liderazgo debe tomar en los próximos 30 días.")
-    if familias["Clima y conversaciones"] >= 3:
-        focos.append("Instalar un espacio semanal breve para conversaciones directas sin chisme.")
-    if familias["Operación humana"] >= 3 or familias["Cliente como espejo"] >= 3:
-        focos.append("Reordenar 1 punto crítico del recorrido del cliente para bajar tensión y errores.")
-
-    if not focos:
-        focos.append("Revisar acuerdos básicos y reforzar coherencia interna en tareas y comunicación.")
-
-    # RESUMEN
-    resumen = (
-        "La empresa muestra tensiones que no vienen de lo técnico sino de cómo se organiza el sistema humano. "
-        "Este mapa permite ver dónde se drena energía y qué ordenar primero."
-    )
-
-    return resumen, mapa, juego, focos
 
 # =========================
 # FORMULARIO
 # =========================
-with st.form("formulario"):
 
-    q1 = st.selectbox("1. ¿Cómo te sentís liderando hoy?", [
-        "Cansado pero comprometido",
-        "Ansioso, todo es urgente",
-        "Frustrado, siento que sostengo demasiado",
-        "Con energía y claridad",
-        "Desconectado / a distancia",
-    ])
+with st.form("diagnostico_mentora_process"):
 
-    q2 = st.text_area("2. ¿Qué decisión venís postergando?")
+    st.markdown("### 1️⃣ Punto de partida")
 
-    q3 = st.selectbox("3. Cuando hay un problema serio:", [
-        "Decidís rápido, aunque incomode",
-        "Esperás a ver si se acomoda solo",
-        "Buscás consenso para no quedar mal",
-        "Te hacés cargo solo y seguís",
-    ])
+    rol = st.selectbox(
+        "¿Cuál es tu rol principal en la empresa?",
+        [
+            "Dirección / Socio / Gerencia",
+            "Liderazgo intermedio / Coordinación",
+            "Equipo operativo / Administrativo",
+            "Atención al cliente / Recepción",
+            "Profesional / Técnico",
+            "Otro",
+        ],
+    )
 
-    q4 = st.text_area("4. ¿Qué comportamiento ya no deberías tolerar?")
+    puerta = st.selectbox(
+        "¿Qué describe mejor lo que está pasando hoy?",
+        [
+            "Desgaste / cansancio en quienes sostienen la empresa",
+            "Tensión interna / roces / conversaciones pendientes",
+            "Operación pesada / lenta / desordenada",
+            "Clientes incómodos / quejas / mala experiencia",
+            "No tengo claro qué pasa, pero algo está trabado",
+        ],
+    )
 
-    q5 = st.selectbox("5. Si la empresa fuera una persona, hoy sería:", [
-        "Niño (reactiva)",
-        "Adolescente (discute, desordena)",
-        "Adulto quemado (agotado)",
-        "Adulto claro (avanza)",
-    ])
+    ejemplo_situacion = st.text_area(
+        "Contá brevemente una situación concreta que para vos represente lo que está pasando:",
+        placeholder="Ejemplo: discusiones entre socios, quejas en recepción, tareas que siempre se hacen a último momento, etc.",
+    )
 
-    q6 = st.selectbox("6. Cuando algo sale mal:", [
-        "Se habla de frente y a tiempo",
-        "Se habla tarde y con bronca",
-        "Se chusmea por atrás",
-        "No se habla, se acumula",
-    ])
+    st.markdown("### 2️⃣ Energía del sistema")
 
-    q7 = st.selectbox("7. La frase más común es:", [
-        "Acá siempre fue así",
-        "Yo hago lo que puedo",
-        "Si no estoy yo, esto no sale",
-        "No me pagan para pensar",
-        "Después vemos",
-    ])
+    q_ene_1 = st.selectbox(
+        "¿Cómo describirías la energía general de la empresa en el día a día?",
+        [
+            "Liviana y ordenada",
+            "Cambia según el día",
+            "Pesada, con cansancio acumulado",
+            "Tensa, todo es urgente",
+        ],
+    )
 
-    q8 = st.text_input("8. ¿Quién recibe tensiones sin ser quien genera el problema?")
+    q_ene_2 = st.selectbox(
+        "En relación a decisiones importantes:",
+        [
+            "Se toman a tiempo y se comunican",
+            "Se demoran un poco, pero salen",
+            "Se estiran hasta que explota algo",
+            "Se patean o se evitan",
+        ],
+    )
 
-    q9 = st.selectbox("9. Roles y responsabilidades:", [
-        "Están claros y se respetan",
-        "Están claros, pero no se respetan",
-        "Son difusos",
-        "Todos hacen un poco de todo",
-    ])
+    st.markdown("### 3️⃣ Vínculos y comunicación interna")
 
-    q10 = st.text_area("10. ¿Qué tema evidente casi no se habla?")
+    q_vin_1 = st.selectbox(
+        "Cuando hay un conflicto o algo molesta:",
+        [
+            "Se habla directo y a tiempo",
+            "Se habla, pero tarde",
+            "Se comenta por atrás",
+            "No se habla, se acumula",
+        ],
+    )
 
-    q11 = st.selectbox("11. En la atención al cliente se repite:", [
-        "Buen trato, pero demoras",
-        "Correcto, pero frío",
-        "Defensivo y tenso",
-        "Cálido y ordenado",
-    ])
+    q_vin_2 = st.selectbox(
+        "En el equipo, lo que más se ve es:",
+        [
+            "Colaboración y apoyo",
+            "Buen trato, pero con chistes o comentarios irónicos",
+            "Grupos separados o bandos",
+            "Personas que trabajan aisladas o a la defensiva",
+        ],
+    )
 
-    q12 = st.selectbox("12. Cuando un cliente se queja, la bronca cae en:", [
-        "Recepción / atención",
-        "Área administrativa",
-        "Profesionales / técnicos",
-        "Dirección",
-    ])
+    st.markdown("### 4️⃣ Organización y claridad")
 
-    q13 = st.selectbox("13. ¿Ese lugar genera el problema?", ["Sí", "No", "A veces"])
+    q_org_1 = st.selectbox(
+        "Respecto a roles y responsabilidades:",
+        [
+            "Están claros y se respetan",
+            "Están claros, pero no siempre se respetan",
+            "Hay zonas grises, no está tan claro",
+            "Cada uno hace un poco de todo para apagar incendios",
+        ],
+    )
 
-    q14 = st.text_area("14. Sensación que se lleva hoy el cliente:")
+    q_org_2 = st.selectbox(
+        "Sobre errores y problemas que se repiten:",
+        [
+            "Son pocos y se corrigen rápido",
+            "Aparecen cada tanto",
+            "Se repiten seguido",
+            "Ya son parte del funcionamiento normal",
+        ],
+    )
 
-    q15 = st.text_area("15. Si el cliente viera la operación real, ¿qué confirmaría?")
+    st.markdown("### 5️⃣ Cliente como espejo del sistema")
 
-    submit = st.form_submit_button("Generar diagnóstico")
+    q_cli_1 = st.selectbox(
+        "La experiencia típica del cliente hoy es:",
+        [
+            "Fluida y ordenada",
+            "Buena, pero con demoras o desprolijidades",
+            "Correcta, pero fría o distante",
+            "Irregular, con quejas o enojos frecuentes",
+        ],
+    )
+
+    q_cli_2 = st.selectbox(
+        "Cuando un cliente se queja o se enoja:",
+        [
+            "Es algo puntual y se resuelve",
+            "Pasa cada tanto y genera tensión",
+            "Pasa seguido y desgasta al equipo",
+            "Se volvió algo normal en el día a día",
+        ],
+    )
+
+    submit = st.form_submit_button("Generar diagnóstico Mentora Process")
 
 # =========================
-# RESULTADOS – FORMATO LISTO PARA ENVIAR
+# PROCESAMIENTO
 # =========================
+
 if submit:
-    respuestas = {
-        "q1": q1, "q2": q2, "q3": q3, "q4": q4, "q5": q5,
-        "q6": q6, "q7": q7, "q8": q8, "q9": q9, "q10": q10,
-        "q11": q11, "q12": q12, "q13": q13, "q14": q14, "q15": q15,
+    bloques_puntaje = {
+        "Energía del sistema": 0,
+        "Vínculos y comunicación": 0,
+        "Organización y claridad": 0,
+        "Cliente como espejo": 0,
     }
 
-    resumen, mapa, juego, focos = analizar_respuestas(respuestas)
+    # puerta / síntoma
+    if puerta == "Desgaste / cansancio en quienes sostienen la empresa":
+        bloques_puntaje["Energía del sistema"] += 2
+    elif puerta == "Tensión interna / roces / conversaciones pendientes":
+        bloques_puntaje["Vínculos y comunicación"] += 2
+    elif puerta == "Operación pesada / lenta / desordenada":
+        bloques_puntaje["Organización y claridad"] += 2
+    elif puerta == "Clientes incómodos / quejas / mala experiencia":
+        bloques_puntaje["Cliente como espejo"] += 2
+    else:
+        bloques_puntaje["Energía del sistema"] += 1
+        bloques_puntaje["Vínculos y comunicación"] += 1
+        bloques_puntaje["Organización y claridad"] += 1
+        bloques_puntaje["Cliente como espejo"] += 1
 
+    # energía
+    if q_ene_1 == "Liviana y ordenada":
+        bloques_puntaje["Energía del sistema"] += 0
+    elif q_ene_1 == "Cambia según el día":
+        bloques_puntaje["Energía del sistema"] += 1
+    elif q_ene_1 == "Pesada, con cansancio acumulado":
+        bloques_puntaje["Energía del sistema"] += 2
+    else:
+        bloques_puntaje["Energía del sistema"] += 3
+
+    if q_ene_2 == "Se toman a tiempo y se comunican":
+        bloques_puntaje["Energía del sistema"] += 0
+    elif q_ene_2 == "Se demoran un poco, pero salen":
+        bloques_puntaje["Energía del sistema"] += 1
+    elif q_ene_2 == "Se estiran hasta que explota algo":
+        bloques_puntaje["Energía del sistema"] += 2
+    else:
+        bloques_puntaje["Energía del sistema"] += 3
+
+    # vínculos
+    if q_vin_1 == "Se habla directo y a tiempo":
+        bloques_puntaje["Vínculos y comunicación"] += 0
+    elif q_vin_1 == "Se habla, pero tarde":
+        bloques_puntaje["Vínculos y comunicación"] += 1
+    elif q_vin_1 == "Se comenta por atrás":
+        bloques_puntaje["Vínculos y comunicación"] += 2
+    else:
+        bloques_puntaje["Vínculos y comunicación"] += 3
+
+    if q_vin_2 == "Colaboración y apoyo":
+        bloques_puntaje["Vínculos y comunicación"] += 0
+    elif q_vin_2 == "Buen trato, pero con chistes o comentarios irónicos":
+        bloques_puntaje["Vínculos y comunicación"] += 1
+    elif q_vin_2 == "Grupos separados o bandos":
+        bloques_puntaje["Vínculos y comunicación"] += 2
+    else:
+        bloques_puntaje["Vínculos y comunicación"] += 3
+
+    # organización
+    if q_org_1 == "Están claros y se respetan":
+        bloques_puntaje["Organización y claridad"] += 0
+    elif q_org_1 == "Están claros, pero no siempre se respetan":
+        bloques_puntaje["Organización y claridad"] += 1
+    elif q_org_1 == "Hay zonas grises, no está tan claro":
+        bloques_puntaje["Organización y claridad"] += 2
+    else:
+        bloques_puntaje["Organización y claridad"] += 3
+
+    if q_org_2 == "Son pocos y se corrigen rápido":
+        bloques_puntaje["Organización y claridad"] += 0
+    elif q_org_2 == "Aparecen cada tanto":
+        bloques_puntaje["Organización y claridad"] += 1
+    elif q_org_2 == "Se repiten seguido":
+        bloques_puntaje["Organización y claridad"] += 2
+    else:
+        bloques_puntaje["Organización y claridad"] += 3
+
+    # cliente
+    if q_cli_1 == "Fluida y ordenada":
+        bloques_puntaje["Cliente como espejo"] += 0
+    elif q_cli_1 == "Buena, pero con demoras o desprolijidades":
+        bloques_puntaje["Cliente como espejo"] += 1
+    elif q_cli_1 == "Correcta, pero fría o distante":
+        bloques_puntaje["Cliente como espejo"] += 2
+    else:
+        bloques_puntaje["Cliente como espejo"] += 3
+
+    if q_cli_2 == "Es algo puntual y se resuelve":
+        bloques_puntaje["Cliente como espejo"] += 0
+    elif q_cli_2 == "Pasa cada tanto y genera tensión":
+        bloques_puntaje["Cliente como espejo"] += 1
+    elif q_cli_2 == "Pasa seguido y desgasta al equipo":
+        bloques_puntaje["Cliente como espejo"] += 2
+    else:
+        bloques_puntaje["Cliente como espejo"] += 3
+
+    # niveles por bloque
+    niveles_bloque = {
+        nombre: clasificar_nivel_bloque(p) for nombre, p in bloques_puntaje.items()
+    }
+
+    # nivel de madurez
+    nivel_madurez, descripcion_madurez = clasificar_madurez(niveles_bloque)
+
+    resumen_global = (
+        "La lectura se hace sobre el sistema humano de la empresa, no sobre personas aisladas. "
+        "Los resultados muestran en qué áreas se concentra hoy la tensión y qué conviene ordenar primero."
+    )
+
+    acciones = generar_acciones(bloques_puntaje, niveles_bloque, nivel_madurez)
+
+    # =========================
+    # INFORME
+    # =========================
     st.markdown("---")
-    st.markdown("## 🧾 Informe Mentora Process — Listo para enviar al cliente")
+    st.markdown("## 🧾 Informe Mentora Process – Versión beta")
 
-    st.markdown("### 1. Lectura general")
-    st.write(resumen)
+    st.markdown("### 1. Datos de contexto")
+    st.write(f"- Rol de quien responde: **{rol}**")
+    st.write(f"- Puerta de entrada al diagnóstico: **{puerta}**")
+    if ejemplo_situacion.strip():
+        st.write("Situación representativa:")
+        st.write(f"“{ejemplo_situacion.strip()}”")
 
-    st.markdown("### 2. Mapa de dinámicas internas")
-    for n, v in mapa.items():
-        st.write(f"- **{n}:** {v}")
+    st.markdown("### 2. Lectura general del sistema humano")
+    st.write(resumen_global)
 
-    st.markdown("### 3. Juego humano que hoy opera en la empresa")
-    st.write(juego)
+    st.markdown("### 3. Mapa por bloques")
+    for nombre, nivel in niveles_bloque.items():
+        st.write(f"- **{nombre}:** {nivel}")
 
-    st.markdown("### 4. Acciones concretas para los próximos 30 días")
-    for i, foco in enumerate(focos, start=1):
-        st.write(f"**{i}. {foco}**")
+    st.markdown("### 4. Nivel de madurez humana de la empresa")
+    st.write(f"**{nivel_madurez}**")
+    st.write(descripcion_madurez)
 
-    st.markdown("### 5. Cierre")
-    st.write(
-        "Ordenar estas áreas permite mejorar coherencia interna, reducir desgaste y estabilizar la experiencia del cliente."
+    st.markdown("### 5. Acciones sugeridas para los próximos 30 días")
+    for i, accion in enumerate(acciones, start=1):
+        st.write(f"{i}. {accion}")
+
+    st.markdown("### 6. Nota para el consultor")
+    st.caption(
+        "Este informe es una base de lectura. Las sesiones y encuentros se diseñan aparte, "
+        "a partir de la realidad específica de la empresa."
     )
