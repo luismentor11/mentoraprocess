@@ -10,11 +10,12 @@ st.set_page_config(
 )
 
 st.title("🧠 Mentora Process")
-st.subheader("Diagnóstico del sistema humano de la empresa")
+st.subheader("Diagnóstico organizacional del sistema humano")
 st.write(
     "Herramienta de diagnóstico profesional para leer el sistema humano de la empresa: "
-    "liderazgo, vínculos, clima emocional, operación real y experiencia del cliente. "
-    "El objetivo es obtener un mapa claro y accionable sobre qué está pasando y qué conviene ordenar primero."
+    "liderazgo, roles, vínculos, clima emocional, organización del trabajo y su impacto en la experiencia del cliente. "
+    "No analiza ventas, marketing ni tecnología. El objetivo es obtener un mapa claro y accionable sobre qué está pasando "
+    "y qué conviene ordenar primero."
 )
 
 # =========================
@@ -68,93 +69,97 @@ def calcular_madurez(niveles: dict) -> tuple[str, str]:
     return nivel, desc
 
 
-def definir_juego_oculto(scores: dict) -> str:
+def definir_dinamica_interna(scores: dict) -> str:
+    """Texto profesional sobre la dinámica interna que sostiene el problema."""
     dominante = max(scores, key=scores.get)
 
-    if dominante == "Poder y vínculos":
+    if dominante == "Estructura de Poder y Responsabilidad":
         return (
-            "El juego oculto principal está en el poder y los vínculos. Hay decisiones que no se terminan de tomar, "
-            "personas o temas intocables y responsabilidades que se desplazan sin nombrarlas con claridad."
+            "La dinámica interna muestra límites poco claros, decisiones postergadas y responsabilidades que se desplazan sin "
+            "nombrarlas de forma directa. Esto debilita la coherencia interna y genera fricción en la operación y en el equipo."
         )
-    if dominante == "Liderazgo y energía":
+    if dominante == "Energía Directiva y Coherencia":
         return (
-            "El juego oculto está en el estado del liderazgo. Quienes sostienen la empresa cargan con demasiado, "
-            "postergan decisiones clave o funcionan con un nivel de desgaste que termina impactando en todo el sistema."
+            "La dinámica actual se apoya en un liderazgo con signos de desgaste, demora en decisiones críticas y dificultad "
+            "para sostener ciertos límites. Esto instala un mensaje implícito de tolerancia a situaciones que ya no cierran "
+            "y sobrecarga a quienes sostienen la empresa."
         )
-    if dominante == "Cultura emocional y conversaciones":
+    if dominante == "Conversaciones, Clima y Cultura":
         return (
-            "El juego oculto vive en la cultura emocional. Hay cosas que se saben pero no se hablan de frente, "
-            "las emociones se acumulan y los conflictos vuelven en forma de comentarios, chistes o tensión crónica."
+            "La cultura organizacional tiende a evitar conversaciones profundas en el momento adecuado. Hay temas que se comentan "
+            "por atrás o se postergan, lo que acumula tensión emocional y hace que ciertos conflictos se repitan en distintas formas."
         )
-    if dominante == "Operación humana y claridad":
+    if dominante == "Organización Humana y Flujo Operativo":
         return (
-            "El juego oculto está en la operación humana. Roles difusos, errores repetidos y una organización que parece "
-            "funcionar a base de apagar incendios más que de acordar cómo se quiere trabajar."
+            "El sistema de trabajo se sostiene con sobrecarga, roles cruzados y una lógica de urgencia permanente. La organización "
+            "humana depende más de la buena voluntad y el esfuerzo extra que de acuerdos claros, lo que genera errores repetidos "
+            "y sensación de estar apagando incendios."
         )
-    # Cliente como espejo
+    # Experiencia del Cliente como Consecuencia Interna
     return (
-        "El juego oculto se ve reflejado en el cliente. La experiencia que vive el cliente confirma el desorden interno: "
-        "quejas, fricciones o trato desigual según quién atienda y en qué momento."
+        "La experiencia del cliente está reflejando el estado interno de la organización. Las quejas, demoras o tensiones que aparecen "
+        "en el vínculo con el cliente son consecuencia directa de desajustes en roles, coordinación, comunicación y acuerdos internos."
     )
 
 
 def generar_acciones(scores: dict, niveles: dict, nivel_madurez: str) -> list[str]:
     acciones: list[str] = []
 
-    # Ordenamos patrones por tensión
-    orden_patrones = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    patrones_top = [p[0] for p in orden_patrones[:2]]
+    # Ordenamos dimensiones por tensión
+    orden_dim = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    dimensiones_top = [p[0] for p in orden_dim[:2]]
 
-    for patron in patrones_top:
-        if patron == "Poder y vínculos":
+    for dim in dimensiones_top:
+        if dim == "Estructura de Poder y Responsabilidad":
             acciones.append(
-                "Redibujar el mapa real de poder y vínculos: identificar quién decide qué, "
-                "qué temas están prohibidos de nombrar y qué roles están sobredimensionados o subutilizados."
+                "Redefinir la estructura de poder y responsabilidad: identificar quién decide sobre qué temas, "
+                "qué decisiones están pendientes y qué límites necesitan ser explicitados en dirección y mandos medios."
             )
             acciones.append(
-                "Poner por escrito 3 decisiones de fondo que hoy se evitan (personas, límites o estructura) "
-                "y definir fecha máxima para tomarlas, aunque incomoden."
+                "Poner por escrito 3 decisiones de fondo que hoy se vienen postergando (personas, límites o estructura) "
+                "y definir fecha concreta para tomarlas, aunque resulten incómodas."
             )
-        elif patron == "Liderazgo y energía":
+        elif dim == "Energía Directiva y Coherencia":
             acciones.append(
-                "Revisar agenda y foco del liderazgo: definir qué tareas tienen que salir de la cabeza del líder "
-                "y pasar a sistema, equipo o terceros en los próximos 30 días."
-            )
-            acciones.append(
-                "Acordar con el liderazgo 1 espacio semanal sin operación (30–45 minutos) para revisar decisiones, "
-                "prioridades y límites, sin apagar incendios."
-            )
-        elif patron == "Cultura emocional y conversaciones":
-            acciones.append(
-                "Identificar 2 conversaciones que todos saben que faltan y ponerles fecha, participantes y objetivo claro "
-                "para tenerlas en los próximos 30 días."
+                "Revisar agenda y foco de la dirección: listar tareas que hoy realiza el liderazgo y que deberían pasar a equipo, "
+                "sistema o terceros en los próximos 30 días para aliviar la sobrecarga."
             )
             acciones.append(
-                "Definir una regla simple de comunicación interna (por ejemplo: lo que se habla de alguien, se habla con esa persona) "
+                "Acordar un espacio semanal de revisión directiva (30–45 minutos) centrado en decisiones, prioridades y límites, "
+                "sin entrar en la operación del día a día."
+            )
+        elif dim == "Conversaciones, Clima y Cultura":
+            acciones.append(
+                "Identificar 2 conversaciones críticas que todos saben que faltan y definir con claridad: participantes, objetivo, "
+                "fecha y forma en que se van a llevar adelante en los próximos 30 días."
+            )
+            acciones.append(
+                "Establecer una regla simple de conversación interna (por ejemplo: lo que se habla de una persona, se habla también con esa persona) "
                 "y sostenerla explícitamente desde la dirección."
             )
-        elif patron == "Operación humana y claridad":
+        elif dim == "Organización Humana y Flujo Operativo":
             acciones.append(
-                "Elegir 1 proceso o circuito crítico (por ejemplo: ingreso de clientes, turnos, pedidos, cobros) y "
-                "mapearlo paso a paso, marcando quién hace qué y en qué orden."
+                "Elegir 1 proceso clave del negocio (por ejemplo: ingreso de clientes, turnos, pedidos, cobros) y mapearlo paso a paso, "
+                "definiendo quién hace qué, en qué orden y con qué tiempos."
             )
             acciones.append(
-                "Revisar 3 tareas que hoy hace alguien que no debería hacerlas y reasignarlas o eliminarlas de forma consciente."
+                "Revisar al menos 3 tareas relevantes que hoy realiza alguien que no debería hacerlas y reasignarlas de forma consciente, "
+                "evitando que personas clave queden atrapadas en tareas operativas permanentes."
             )
-        elif patron == "Cliente como espejo":
+        elif dim == "Experiencia del Cliente como Consecuencia Interna":
             acciones.append(
-                "Registrar durante 15 días las quejas o fricciones más frecuentes de los clientes y agruparlas por tipo "
-                "(demora, trato, errores, comunicación, organización)."
+                "Registrar durante 15 días las principales quejas o fricciones de los clientes y agruparlas por tipo "
+                "(demora, trato, comunicación, errores, coordinación)."
             )
             acciones.append(
-                "Diseñar una respuesta estándar clara y respetuosa para cada tipo de queja, alineada entre recepción, administración "
-                "y dirección, para bajar la tensión en quienes atienden."
+                "Definir respuestas claras y coherentes para cada tipo de situación con el cliente y alinear el criterio entre "
+                "recepción, administración, responsables operativos y dirección."
             )
 
     if "Nivel 1" in nivel_madurez or "Nivel 2" in nivel_madurez:
         acciones.append(
-            "Programar una reunión específica para revisar el sistema humano (no números ni ventas): "
-            "roles, conversaciones pendientes, límites y decisiones postergadas."
+            "Realizar una reunión específica de revisión organizacional enfocada solo en el sistema humano (no en números ni ventas): "
+            "roles, responsabilidades, conversaciones pendientes y decisiones postergadas."
         )
 
     # eliminar duplicadas manteniendo orden
@@ -168,17 +173,26 @@ def generar_acciones(scores: dict, niveles: dict, nivel_madurez: str) -> list[st
 
 def armar_reporte_texto(
     contexto: dict,
-    patrones_scores: dict,
-    patrones_niveles: dict,
+    dimensiones_scores: dict,
+    dimensiones_niveles: dict,
     nivel_madurez: str,
     desc_madurez: str,
-    juego_oculto: str,
+    dinamica: str,
     acciones: list[str],
 ) -> str:
     lineas: list[str] = []
 
-    lineas.append("INFORME MENTORA PROCESS")
+    # Título
+    lineas.append("DIAGNÓSTICO ORGANIZACIONAL – Versión Mentora Process")
     lineas.append("")
+    lineas.append(
+        "Este diagnóstico analiza el sistema humano que sostiene el funcionamiento de la empresa: "
+        "liderazgo, roles, vínculos, clima emocional, organización del trabajo y su impacto en la experiencia del cliente. "
+        "No evalúa ventas, marketing ni tecnología. El objetivo es mostrar cómo está operando el equipo hoy y qué conviene ordenar primero."
+    )
+    lineas.append("")
+
+    # Contexto
     lineas.append("1. DATOS DE CONTEXTO")
     lineas.append(f"- Tipo de empresa: {contexto['tipo_empresa']}")
     lineas.append(f"- Tamaño aproximado del equipo: {contexto['tam_equipo']} personas")
@@ -190,48 +204,46 @@ def armar_reporte_texto(
     lineas.append(f"- Costo de seguir así: {contexto['costo'] or 'No especificado'}")
     lineas.append("")
     if contexto["caso"]:
-        lineas.append("Caso representativo:")
+        lineas.append("Caso representativo del funcionamiento actual:")
         lineas.append(f"{contexto['caso']}")
         lineas.append("")
 
-    lineas.append("2. LECTURA GENERAL DEL SISTEMA HUMANO")
-    lineas.append(
-        "La lectura se enfoca en el sistema humano, no en personas aisladas. "
-        "A partir de las respuestas, se observa cómo se combinan poder, liderazgo, conversaciones, "
-        "organización y experiencia del cliente."
-    )
-    lineas.append("")
-
-    lineas.append("3. MAPA DE PATRONES INTERNOS")
+    # Mapa de dimensiones internas
+    lineas.append("2. MAPA DE DIMENSIONES INTERNAS")
+    lineas.append("Nivel de intensidad en cada dimensión humana de la organización:")
     for nombre in [
-        "Poder y vínculos",
-        "Liderazgo y energía",
-        "Cultura emocional y conversaciones",
-        "Operación humana y claridad",
-        "Cliente como espejo",
+        "Estructura de Poder y Responsabilidad",
+        "Energía Directiva y Coherencia",
+        "Conversaciones, Clima y Cultura",
+        "Organización Humana y Flujo Operativo",
+        "Experiencia del Cliente como Consecuencia Interna",
     ]:
-        nivel = patrones_niveles[nombre]
-        score = patrones_scores[nombre]
+        nivel = dimensiones_niveles[nombre]
+        score = dimensiones_scores[nombre]
         lineas.append(f"- {nombre}: {nivel} (intensidad {score})")
     lineas.append("")
 
-    lineas.append("4. JUEGO OCULTO QUE HOY ESTÁ OPERANDO")
-    lineas.append(juego_oculto)
+    # Dinámica interna
+    lineas.append("3. DINÁMICA INTERNA QUE SOSTIENE EL PROBLEMA ACTUAL")
+    lineas.append(dinamica)
     lineas.append("")
 
-    lineas.append("5. NIVEL DE MADUREZ HUMANA DE LA EMPRESA")
+    # Madurez
+    lineas.append("4. NIVEL DE MADUREZ HUMANA DE LA EMPRESA")
     lineas.append(nivel_madurez)
     lineas.append(desc_madurez)
     lineas.append("")
 
-    lineas.append("6. ACCIONES PRIORITARIAS PARA LOS PRÓXIMOS 30–60 DÍAS")
+    # Acciones
+    lineas.append("5. FOCOS DE TRABAJO PRIORITARIOS (PRÓXIMOS 30–60 DÍAS)")
     for i, accion in enumerate(acciones, start=1):
         lineas.append(f"{i}. {accion}")
     lineas.append("")
 
+    # Cierre
     lineas.append(
-        "Este informe es un punto de partida. La profundidad real se trabaja en conversación, "
-        "pero el mapa permite decidir por dónde conviene empezar a intervenir."
+        "Este diagnóstico es un mapa inicial. La profundidad real se trabaja en conversación, "
+        "donde se ordenan roles, responsabilidades y acuerdos para que la empresa funcione con mayor coherencia, claridad y energía."
     )
 
     return "\n".join(lineas)
@@ -267,7 +279,7 @@ with st.form("diagnostico_mentora_process"):
 
     areas = st.text_input(
         "Áreas o sectores principales (separadas por coma)",
-        placeholder="Ejemplo: Administración, Ventas, Recepción, Producción, Dirección",
+        placeholder="Ejemplo: Administración, Recepción, Operaciones, Dirección",
     )
 
     antiguedad_equipo = st.selectbox(
@@ -317,7 +329,7 @@ with st.form("diagnostico_mentora_process"):
 
     caso_representativo = st.text_area(
         "Contá un caso concreto que represente lo que está pasando:",
-        placeholder="Ejemplo: discusión entre socios, queja fuerte de un cliente, error repetido, renuncia, cruce entre áreas, etc.",
+        placeholder="Ejemplo: discusión entre socios, queja fuerte de un cliente, error repetido, cruce entre áreas, renuncia, etc.",
     )
 
     costo_seguir = st.multiselect(
@@ -337,9 +349,9 @@ with st.form("diagnostico_mentora_process"):
     if "Otro" in costo_seguir:
         costo_otro = st.text_input("¿Qué otro costo importante identificás?")
 
-    st.markdown("### 2️⃣ Patrones profundos del sistema humano")
+    st.markdown("### 2️⃣ Dimensiones internas del sistema humano")
 
-    st.markdown("#### Poder y vínculos invisibles")
+    st.markdown("#### Estructura de Poder y Responsabilidad")
     poder_tema_taboo = st.selectbox(
         "Sentís que hay temas que nadie quiere nombrar:",
         [
@@ -371,7 +383,7 @@ with st.form("diagnostico_mentora_process"):
         placeholder="Ejemplo: un socio que no aporta, alguien que maltrata, favoritismos, roles desbalanceados…",
     )
 
-    st.markdown("#### Liderazgo y energía")
+    st.markdown("#### Energía Directiva y Coherencia")
     lid_energia = st.selectbox(
         "La energía del liderazgo hoy está:",
         [
@@ -404,7 +416,7 @@ with st.form("diagnostico_mentora_process"):
         placeholder="Ejemplo: impuntualidad crónica, malos tratos, incumplimiento de acuerdos, baja responsabilidad…",
     )
 
-    st.markdown("#### Cultura emocional y conversaciones")
+    st.markdown("#### Conversaciones, Clima y Cultura")
     cult_conflicto = st.selectbox(
         "Cuando algo molesta o hay conflicto:",
         [
@@ -428,7 +440,7 @@ with st.form("diagnostico_mentora_process"):
         placeholder="Ejemplo: las mismas discusiones, quejas entre áreas, peleas silenciosas…",
     )
 
-    st.markdown("#### Operación humana y claridad")
+    st.markdown("#### Organización Humana y Flujo Operativo")
     op_errores = st.selectbox(
         "Errores o problemas que se repiten:",
         [
@@ -461,7 +473,7 @@ with st.form("diagnostico_mentora_process"):
         placeholder="Ejemplo: un dueño haciendo tareas operativas, recepción resolviendo problemas de dirección, etc.",
     )
 
-    st.markdown("#### Cliente como espejo del sistema")
+    st.markdown("#### Experiencia del Cliente como Consecuencia Interna")
     cli_experiencia = st.selectbox(
         "La experiencia típica del cliente hoy es:",
         [
@@ -502,47 +514,47 @@ with st.form("diagnostico_mentora_process"):
 # =========================
 
 if submit:
-    # Scores por patrón
-    patrones_scores = {
-        "Poder y vínculos": 0,
-        "Liderazgo y energía": 0,
-        "Cultura emocional y conversaciones": 0,
-        "Operación humana y claridad": 0,
-        "Cliente como espejo": 0,
+    # Dimensiones y scores
+    dimensiones_scores = {
+        "Estructura de Poder y Responsabilidad": 0,
+        "Energía Directiva y Coherencia": 0,
+        "Conversaciones, Clima y Cultura": 0,
+        "Organización Humana y Flujo Operativo": 0,
+        "Experiencia del Cliente como Consecuencia Interna": 0,
     }
 
     # síntoma principal
     if sintoma_principal == "Desgaste / cansancio en quienes sostienen la empresa":
-        patrones_scores["Liderazgo y energía"] += 3
+        dimensiones_scores["Energía Directiva y Coherencia"] += 3
     elif sintoma_principal == "Tensiones internas / roces / conversaciones pendientes":
-        patrones_scores["Cultura emocional y conversaciones"] += 3
-        patrones_scores["Poder y vínculos"] += 1
+        dimensiones_scores["Conversaciones, Clima y Cultura"] += 3
+        dimensiones_scores["Estructura de Poder y Responsabilidad"] += 1
     elif sintoma_principal == "Operación pesada / lenta / desordenada":
-        patrones_scores["Operación humana y claridad"] += 3
+        dimensiones_scores["Organización Humana y Flujo Operativo"] += 3
     elif sintoma_principal == "Clientes incómodos / quejas / mala experiencia":
-        patrones_scores["Cliente como espejo"] += 3
+        dimensiones_scores["Experiencia del Cliente como Consecuencia Interna"] += 3
     else:
-        patrones_scores["Poder y vínculos"] += 1
-        patrones_scores["Liderazgo y energía"] += 1
-        patrones_scores["Cultura emocional y conversaciones"] += 1
-        patrones_scores["Operación humana y claridad"] += 1
-        patrones_scores["Cliente como espejo"] += 1
+        dimensiones_scores["Estructura de Poder y Responsabilidad"] += 1
+        dimensiones_scores["Energía Directiva y Coherencia"] += 1
+        dimensiones_scores["Conversaciones, Clima y Cultura"] += 1
+        dimensiones_scores["Organización Humana y Flujo Operativo"] += 1
+        dimensiones_scores["Experiencia del Cliente como Consecuencia Interna"] += 1
 
-    # Poder y vínculos
+    # Estructura de Poder y Responsabilidad
     map_poder_tema = {
         "Casi nunca": 0,
         "A veces": 1,
         "Seguido": 2,
         "Todo el tiempo": 3,
     }
-    patrones_scores["Poder y vínculos"] += map_poder_tema[poder_tema_taboo]
+    dimensiones_scores["Estructura de Poder y Responsabilidad"] += map_poder_tema[poder_tema_taboo]
 
     map_poder_intocables = {
         "No, en general se puede hablar de todo": 0,
         "Un poco, pero se puede abordar": 1,
         "Sí, claro y se evita tocarlos": 3,
     }
-    patrones_scores["Poder y vínculos"] += map_poder_intocables[poder_intocables]
+    dimensiones_scores["Estructura de Poder y Responsabilidad"] += map_poder_intocables[poder_intocables]
 
     map_poder_resp = {
         "Se asume y se corrige": 0,
@@ -550,16 +562,16 @@ if submit:
         "Se baja hacia niveles más bajos": 2,
         "Se diluye o se patea sin que nadie se haga cargo": 3,
     }
-    patrones_scores["Poder y vínculos"] += map_poder_resp[poder_responsabilidad]
+    dimensiones_scores["Estructura de Poder y Responsabilidad"] += map_poder_resp[poder_responsabilidad]
 
-    # Liderazgo y energía
+    # Energía Directiva y Coherencia
     map_lid_energia = {
         "Clara y con buena energía": 0,
         "Con cierto desgaste, pero manejable": 1,
         "Cansada / saturada": 2,
         "Ausente o muy reactiva": 3,
     }
-    patrones_scores["Liderazgo y energía"] += map_lid_energia[lid_energia]
+    dimensiones_scores["Energía Directiva y Coherencia"] += map_lid_energia[lid_energia]
 
     map_lid_decisiones = {
         "Se toman a tiempo y se comunican": 0,
@@ -567,7 +579,7 @@ if submit:
         "Se estiran hasta que explota algo": 2,
         "Directamente se evitan": 3,
     }
-    patrones_scores["Liderazgo y energía"] += map_lid_decisiones[lid_decisiones]
+    dimensiones_scores["Energía Directiva y Coherencia"] += map_lid_decisiones[lid_decisiones]
 
     map_lid_limites = {
         "Se respeta y se ajusta": 0,
@@ -575,16 +587,16 @@ if submit:
         "Genera molestia o resistencia": 2,
         "Se castiga sutilmente o se deslegitima": 3,
     }
-    patrones_scores["Liderazgo y energía"] += map_lid_limites[lid_limites]
+    dimensiones_scores["Energía Directiva y Coherencia"] += map_lid_limites[lid_limites]
 
-    # Cultura emocional y conversaciones
+    # Conversaciones, Clima y Cultura
     map_cult_conflicto = {
         "Se habla de frente y a tiempo": 0,
         "Se habla, pero tarde": 1,
         "Se comenta por atrás": 2,
         "No se habla y se acumula": 3,
     }
-    patrones_scores["Cultura emocional y conversaciones"] += map_cult_conflicto[cult_conflicto]
+    dimensiones_scores["Conversaciones, Clima y Cultura"] += map_cult_conflicto[cult_conflicto]
 
     map_cult_emocion = {
         "Calma / foco": 0,
@@ -592,16 +604,16 @@ if submit:
         "Irritación": 2,
         "Resignación": 3,
     }
-    patrones_scores["Cultura emocional y conversaciones"] += map_cult_emocion[cult_emocion]
+    dimensiones_scores["Conversaciones, Clima y Cultura"] += map_cult_emocion[cult_emocion]
 
-    # Operación humana y claridad
+    # Organización Humana y Flujo Operativo
     map_op_errores = {
         "Son pocos y se corrigen rápido": 0,
         "Aparecen cada tanto": 1,
         "Se repiten seguido": 2,
         "Ya son parte del funcionamiento normal": 3,
     }
-    patrones_scores["Operación humana y claridad"] += map_op_errores[op_errores]
+    dimensiones_scores["Organización Humana y Flujo Operativo"] += map_op_errores[op_errores]
 
     map_op_modo = {
         "Planificado y previsible": 0,
@@ -609,7 +621,7 @@ if submit:
         "Resolver sobre la marcha casi siempre": 2,
         "Apagar incendios todo el tiempo": 3,
     }
-    patrones_scores["Operación humana y claridad"] += map_op_modo[op_modo_trabajo]
+    dimensiones_scores["Organización Humana y Flujo Operativo"] += map_op_modo[op_modo_trabajo]
 
     map_op_saturacion = {
         "No se ve saturación importante": 0,
@@ -617,16 +629,16 @@ if submit:
         "Siempre las mismas personas o áreas están saturadas": 2,
         "La saturación es constante y generalizada": 3,
     }
-    patrones_scores["Operación humana y claridad"] += map_op_saturacion[op_saturacion]
+    dimensiones_scores["Organización Humana y Flujo Operativo"] += map_op_saturacion[op_saturacion]
 
-    # Cliente como espejo
+    # Experiencia del Cliente como Consecuencia Interna
     map_cli_exp = {
         "Fluida y ordenada": 0,
         "Buena, pero con demoras o desprolijidades": 1,
         "Correcta, pero fría o distante": 2,
         "Irregular, con quejas o enojos frecuentes": 3,
     }
-    patrones_scores["Cliente como espejo"] += map_cli_exp[cli_experiencia]
+    dimensiones_scores["Experiencia del Cliente como Consecuencia Interna"] += map_cli_exp[cli_experiencia]
 
     map_cli_quejas = {
         "Son raros y puntuales": 0,
@@ -634,31 +646,31 @@ if submit:
         "Pasan seguido": 2,
         "Son parte del día a día": 3,
     }
-    patrones_scores["Cliente como espejo"] += map_cli_quejas[cli_quejas_frecuencia]
+    dimensiones_scores["Experiencia del Cliente como Consecuencia Interna"] += map_cli_quejas[cli_quejas_frecuencia]
 
     if cli_puerta in ["Recepción / Atención", "Administración"]:
-        patrones_scores["Cliente como espejo"] += 1
-        patrones_scores["Operación humana y claridad"] += 1
+        dimensiones_scores["Experiencia del Cliente como Consecuencia Interna"] += 1
+        dimensiones_scores["Organización Humana y Flujo Operativo"] += 1
     elif cli_puerta == "Profesionales / Técnicos":
-        patrones_scores["Cliente como espejo"] += 2
-        patrones_scores["Liderazgo y energía"] += 1
+        dimensiones_scores["Experiencia del Cliente como Consecuencia Interna"] += 2
+        dimensiones_scores["Energía Directiva y Coherencia"] += 1
     elif cli_puerta == "Dirección / Socios":
-        patrones_scores["Cliente como espejo"] += 1
-        patrones_scores["Poder y vínculos"] += 1
-    else:  # depende
-        patrones_scores["Cliente como espejo"] += 1
+        dimensiones_scores["Experiencia del Cliente como Consecuencia Interna"] += 1
+        dimensiones_scores["Estructura de Poder y Responsabilidad"] += 1
+    else:  # Depende
+        dimensiones_scores["Experiencia del Cliente como Consecuencia Interna"] += 1
 
-    # Niveles por patrón
-    patrones_niveles = {
+    # Niveles por dimensión
+    dimensiones_niveles = {
         nombre: nivel_bajo_medio_alto(score)
-        for nombre, score in patrones_scores.items()
+        for nombre, score in dimensiones_scores.items()
     }
 
     # Madurez
-    nivel_madurez, desc_madurez = calcular_madurez(patrones_niveles)
+    nivel_madurez, desc_madurez = calcular_madurez(dimensiones_niveles)
 
     # Acciones sugeridas
-    acciones = generar_acciones(patrones_scores, patrones_niveles, nivel_madurez)
+    acciones = generar_acciones(dimensiones_scores, dimensiones_niveles, nivel_madurez)
 
     # Contexto para reporte
     costo_descripcion = ", ".join([c for c in costo_seguir if c != "Otro"])
@@ -680,15 +692,15 @@ if submit:
         "costo": costo_descripcion,
     }
 
-    juego_oculto = definir_juego_oculto(patrones_scores)
+    dinamica = definir_dinamica_interna(dimensiones_scores)
 
     reporte_texto = armar_reporte_texto(
         contexto,
-        patrones_scores,
-        patrones_niveles,
+        dimensiones_scores,
+        dimensiones_niveles,
         nivel_madurez,
         desc_madurez,
-        juego_oculto,
+        dinamica,
         acciones,
     )
 
@@ -696,7 +708,7 @@ if submit:
     # MOSTRAR INFORME EN PANTALLA
     # =========================
     st.markdown("---")
-    st.markdown("## 🧾 Informe Mentora Process – Versión beta profesional")
+    st.markdown("## 🧾 Diagnóstico Organizacional – Versión Mentora Process")
 
     st.markdown("### 1. Datos de contexto")
     st.write(f"- Tipo de empresa: **{tipo_empresa}**")
@@ -709,24 +721,24 @@ if submit:
     st.write(f"- Costo de seguir así: **{costo_descripcion or 'No especificado'}**")
 
     if caso_representativo.strip():
-        st.markdown("**Caso representativo:**")
+        st.markdown("**Caso representativo del funcionamiento actual:**")
         st.write(caso_representativo.strip())
 
-    st.markdown("### 2. Mapa de patrones internos")
-    for nombre in patrones_scores.keys():
+    st.markdown("### 2. Mapa de dimensiones internas")
+    for nombre in dimensiones_scores.keys():
         st.write(
-            f"- **{nombre}:** {patrones_niveles[nombre]} "
-            f"(intensidad {patrones_scores[nombre]})"
+            f"- **{nombre}:** {dimensiones_niveles[nombre]} "
+            f"(intensidad {dimensiones_scores[nombre]})"
         )
 
-    st.markdown("### 3. Juego oculto que hoy está operando")
-    st.write(juego_oculto)
+    st.markdown("### 3. Dinámica interna que sostiene el problema actual")
+    st.write(dinamica)
 
     st.markdown("### 4. Nivel de madurez humana de la empresa")
     st.write(f"**{nivel_madurez}**")
     st.write(desc_madurez)
 
-    st.markdown("### 5. Acciones sugeridas para los próximos 30–60 días")
+    st.markdown("### 5. Focos de trabajo prioritarios (próximos 30–60 días)")
     for i, acc in enumerate(acciones, start=1):
         st.write(f"{i}. {acc}")
 
@@ -740,6 +752,6 @@ if submit:
     st.download_button(
         label="⬇️ Descargar informe en texto (.txt)",
         data=reporte_texto,
-        file_name="informe_mentora_process.txt",
+        file_name="diagnostico_organizacional_mentora_process.txt",
         mime="text/plain",
     )
