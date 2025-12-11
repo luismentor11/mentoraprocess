@@ -1,225 +1,359 @@
+import os
 import streamlit as st
-from urllib.parse import unquote
-import openai
+from openai import OpenAI
 
+# =========================
+# CONFIG BÁSICA
+# =========================
 st.set_page_config(
     page_title="Mentora Roleplay Coach",
     page_icon="🎭",
-    layout="centered"
+    layout="centered",
 )
 
-# ------------------------------------------
-# ----------- ESTILO VISUAL -----------------
-# ------------------------------------------
-
-st.markdown("""
-<style>
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 18px;
-    box-shadow: 0px 2px 12px rgba(0,0,0,0.08);
-    margin-bottom: 25px;
-}
-h1 {
-    color: #4F46E5;
-    font-weight: 900 !important;
-}
-.stButton>button {
-    background-color: #4F46E5 !important;
-    color: white;
-    border-radius: 12px;
-    padding: 10px 20px;
-    border: none;
-    font-size: 1.05rem;
-    font-weight: 600;
-}
-.roleplay-btn {
-    background: #4F46E5; 
-    padding: 8px 15px; 
-    border-radius: 10px; 
-    color: white; 
-    font-weight: 600;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ------------------------------------------
-# ----------- LEER PARAMETROS ---------------
-# ------------------------------------------
-
-params = st.query_params
-conflicto_recibido = None
-
-if "conflicto" in params:
-    conflicto_recibido = unquote(params["conflicto"])
-
-# ------------------------------------------
-# ----------- CLASIFICADOR AUTOMÁTICO -------
-# ------------------------------------------
-
-def clasificar_conflicto(texto):
-    if not texto:
-        return "General", []
-
-    t = texto.lower()
-
-    # Liderazgo / empleados
-    if any(x in t for x in ["empleado", "equipo", "personal", "trabajador", "colaborador"]):
-        return "Liderazgo y Gestión de Personas", [
-            "Charla de alineación y expectativas",
-            "Feedback correctivo claro y firme",
-            "Cortar patrón repetitivo y reestablecer autoridad"
-        ]
-
-    # Socios
-    if any(x in t for x in ["socio", "sociedad", "decisiones", "acuerdos"]):
-        return "Socios y Negociación Estratégica", [
-            "Definición de roles y toma de decisiones",
-            "Alineación de visión del negocio",
-            "Negociación de responsabilidades"
-        ]
-
-    # Clientes / ventas
-    if any(x in t for x in ["cliente", "venta", "presupuesto", "queja"]):
-        return "Clientes y Manejo Comercial", [
-            "Negociación de precio / objeciones",
-            "Conversación de reclamo difícil",
-            "Cierre comercial con presión"
-        ]
-
-    # Productividad / burnout / emocional
-    if any(x in t for x in ["cans", "agot", "estres", "tiempo", "anquietud", "ansiedad"]):
-        return "Gestión Emocional y Productividad", [
-            "Pedido de ayuda / redistribución de carga",
-            "Poner límites sin culpa",
-            "Reestructurar tiempos y prioridades"
-        ]
-
-    return "Conversación General", [
-        "Clarificación de expectativas",
-        "Expresión honesta sin conflicto",
-        "Negociación simple"
-    ]
-
-# ------------------------------------------
-# ----------- HEADER -------------------------
-# ------------------------------------------
-
-st.markdown('<div class="card">', unsafe_allow_html=True)
 st.title("🎭 Mentora Roleplay Coach")
-st.caption("Simulá conversaciones difíciles con un coach interactivo que se adapta a tu estilo y objetivo.")
-st.markdown('</div>', unsafe_allow_html=True)
+st.subheader("Entrenamiento de conversaciones difíciles en contexto real")
 
-# ------------------------------------------
-# ----------- DEFINIR TEMA ------------------
-# ------------------------------------------
-
-st.markdown('<div class="card">', unsafe_allow_html=True)
-
-if conflicto_recibido:
-    st.subheader("🧩 Conversación detectada desde Mentora Process")
-    st.info(conflicto_recibido)
-    tema = st.text_area("¿Querés ajustar o modificar el enfoque de la conversación?", conflicto_recibido)
-else:
-    tema = st.text_area("¿Sobre qué conversación querés entrenar hoy?")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-
-# ------------------------------------------
-# ----------- CLASIFICACIÓN AUTOMÁTICA ------
-# ------------------------------------------
-
-if tema:
-    categoria, escenarios = clasificar_conflicto(tema)
-
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("🧭 Tipo de conversación detectada automáticamente")
-    st.success(categoria)
-
-    st.markdown("### Escenarios recomendados:")
-    for i, esc in enumerate(escenarios, 1):
-        st.markdown(f"**{i}. {esc}**")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-# ------------------------------------------
-# ----------- ELEGIR ESTILO -----------------
-# ------------------------------------------
-
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("🎚 Seleccioná el estilo del roleplay")
-
-modo = st.radio(
-    "Elegí el tipo de interacción:",
-    [
-        "Suave — Acompañamiento y contención",
-        "Directo — Comunicación clara y neutral",
-        "Brutalidad Productiva — Sin filtros, foco en resultados"
-    ]
+st.write(
+    "Esta herramienta te permite practicar conversaciones importantes de la vida real "
+    "(colaboradores, socios, clientes, mandos medios) con un roleplay guiado. "
+    "Primero definís el escenario, luego ves una lectura profesional de la situación, "
+    "una estrategia sugerida y finalmente practicás la conversación en vivo."
 )
-st.markdown('</div>', unsafe_allow_html=True)
 
+# =========================
+# CONFIG OPENAI
+# =========================
 
-# ------------------------------------------
-# ----------- CHAT ROLEPLAY -----------------
-# ------------------------------------------
+def get_openai_client() -> OpenAI | None:
+    api_key = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY", None)
+    if not api_key:
+        st.error("No se encontró la API key de OpenAI. Configurala en Streamlit Cloud (Secrets) como OPENAI_API_KEY.")
+        return None
+    return OpenAI(api_key=api_key)
 
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("💬 Chat de Roleplay")
+client = get_openai_client()
 
-if "messages" not in st.session_state:
-    st.session_state["messages"] = []
+# =========================
+# SESSION STATE
+# =========================
 
-# Mostrar historial
-for m in st.session_state["messages"]:
-    with st.chat_message(m["role"]):
-        st.write(m["content"])
+if "rp_brief" not in st.session_state:
+    st.session_state.rp_brief = None
 
-# ------------------------------------------
-# ----------- GENERAR RESPUESTA IA ----------
-# ------------------------------------------
+if "rp_diagnostico" not in st.session_state:
+    st.session_state.rp_diagnostico = ""
+if "rp_estrategia" not in st.session_state:
+    st.session_state.rp_estrategia = ""
+if "rp_conversacion" not in st.session_state:
+    # cada ítem: {"role": "user"/"assistant", "content": str}
+    st.session_state.rp_conversacion = []
+if "rp_iniciado" not in st.session_state:
+    st.session_state.rp_iniciado = False
 
-if prompt := st.chat_input("Escribí tu mensaje para iniciar o continuar el roleplay..."):
+# =========================
+# HELPERS LÓGICOS
+# =========================
 
-    st.session_state["messages"].append({"role": "user", "content": prompt})
+def construir_diagnostico(brief: dict) -> str:
+    """Texto profesional que lee el escenario de conversación."""
+    tipo = brief["tipo_situacion"]
+    objetivo = brief["objetivo"]
+    emocion = brief["emocion"]
+    tono = brief["tono"]
+    rol_otro = brief["rol_otro"]
+    que_pasa = brief["que_pasa"]
 
-    system_prompt = f"""
-    Estás actuando como un simulador conversacional profesional llamado Mentora Roleplay Coach.
+    partes = []
 
-    Tema principal: {tema}
-    Categoría detectada: {categoria}
-    Escenarios recomendados: {escenarios}
-    Modo seleccionado: {modo}
+    partes.append(
+        f"Se está preparando una conversación con **{rol_otro}** en un contexto de **{tipo.lower()}**. "
+        f"El objetivo declarado es: **{objetivo}**."
+    )
 
-    Reglas:
-    - Respondé como la contraparte real en esa conversación.
-    - Ajustate al modo elegido (suave, directo o brutalidad productiva).
-    - Ayudá a profundizar con preguntas.
-    - No sermonees, no des monólogos.
-    - La conversación debe avanzar hacia claridad y resolución.
-    """
-
-    try:
-        respuesta = openai.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                *st.session_state["messages"]
-            ]
+    if emocion in ["Bronca", "Irritación"]:
+        partes.append(
+            "La emoción predominante es de enojo, lo que aumenta el riesgo de que la conversación derive "
+            "en descarga emocional en lugar de orden y acuerdos. Es clave cuidar el tono y los tiempos."
+        )
+    elif emocion in ["Ansiedad", "Confusión"]:
+        partes.append(
+            "La emoción predominante es de inquietud o confusión. Esto puede llevar a evitar poner el tema "
+            "en palabras claras o salir de la conversación sin un acuerdo concreto."
+        )
+    elif emocion in ["Cansancio", "Resignación"]:
+        partes.append(
+            "Hay signos de cansancio o resignación. Eso suele traducirse en conversaciones donde se nombra el problema "
+            "pero no se sostienen límites ni acuerdos nuevos en el tiempo."
+        )
+    else:
+        partes.append(
+            "La emocionalidad declarada está relativamente regulada, lo que aumenta la posibilidad de sostener una conversación clara y efectiva."
         )
 
-        bot_reply = respuesta.choices[0].message["content"]
+    partes.append(
+        "En esta situación, la clave no es ganar la discusión, sino ordenar el mensaje, sostener el límite que corresponde "
+        "y salir de la conversación con un acuerdo claro y verificable, aunque sea incómodo."
+    )
 
-        st.session_state["messages"].append({"role": "assistant", "content": bot_reply})
+    if que_pasa.strip():
+        partes.append(
+            f"Resumen del caso que se quiere trabajar: {que_pasa.strip()}"
+        )
 
-        with st.chat_message("assistant"):
-            st.write(bot_reply)
+    return "\n\n".join(partes)
 
+
+def construir_estrategia(brief: dict) -> str:
+    """Estrategia conversacional en 4 pasos."""
+    tipo = brief["tipo_situacion"]
+    objetivo = brief["objetivo"]
+    tono = brief["tono"]
+    rol_otro = brief["rol_otro"]
+
+    estrategia = []
+
+    estrategia.append("**1. Apertura**")
+    estrategia.append(
+        f"- Empezar ubicando contexto y reconocimiento: explicar en pocas palabras de qué querés hablar con {rol_otro} "
+        f"y por qué es importante para el funcionamiento de la empresa, evitando reproches directos en la primera frase.\n"
+        f"- El tono sugerido es: **{tono}**."
+    )
+
+    estrategia.append("**2. Cuerpo de la conversación**")
+    estrategia.append(
+        "- Describir hechos concretos (qué pasó, cuándo, cómo impactó) sin generalizar ni etiquetar a la persona.\n"
+        "- Nombrar cómo eso afecta al equipo, al sistema y/o al cliente.\n"
+        f"- Relacionar lo que está pasando con el objetivo: **{objetivo}**."
+    )
+
+    estrategia.append("**3. Pedido y acuerdo**")
+    if "límite" in objetivo.lower():
+        estrategia.append(
+            "- Hacer un pedido claro sobre lo que a partir de ahora **no se va a seguir tolerando** y qué comportamiento se espera.\n"
+            "- Acordar plazos y criterios concretos (qué cambia y desde cuándo)."
+        )
+    elif "feedback" in tipo.lower() or "feedback" in objetivo.lower():
+        estrategia.append(
+            "- Dar feedback desde la observación, no desde la acusación.\n"
+            "- Preguntar al otro cómo ve la situación y qué está dispuesto a ajustar."
+        )
+    else:
+        estrategia.append(
+            "- Expresar con claridad qué esperás que cambie, qué necesitas que la otra parte vea y qué compromiso estás pidiendo.\n"
+            "- Chequear si la otra persona comprende y está dispuesta a asumir ese compromiso."
+        )
+
+    estrategia.append("**4. Cierre**")
+    estrategia.append(
+        "- Resumir en voz alta el acuerdo o el resultado (aun si el resultado es: no hubo acuerdo, pero el límite quedó claro).\n"
+        "- Agradecer la conversación sin desarmar el límite planteado.\n"
+        "- Acordar un próximo punto de revisión si el tema lo requiere."
+    )
+
+    return "\n".join(estrategia)
+
+
+def construir_system_prompt(brief: dict) -> str:
+    """Prompt del sistema para el modelo. El modelo actúa como la otra persona, no como coach."""
+    return (
+        "Sos MENTORA ROLEPLAY COACH, actuando como la otra parte en una conversación real.\n"
+        "NO sos terapeuta, NO sos mediador externo, NO explicás teoría.\n"
+        "Tu tarea es representar con realismo a la persona con la que el usuario quiere hablar.\n\n"
+        "Reglas:\n"
+        "- Respondé siempre en primera persona, como si fueras esa persona.\n"
+        "- Mantené un comportamiento coherente con el rol y el escenario.\n"
+        "- Podés estar a la defensiva, confundido, colaborativo o resistente según la situación, pero siempre verosímil.\n"
+        "- No reveles que sos una IA ni que esto es un ejercicio.\n"
+        "- No des consejos al usuario, solo respondé como personaje.\n\n"
+        "Cuando el usuario escriba, respondé en 1 a 5 líneas, máximo. No hagas monólogos eternos.\n\n"
+        f"ESCENARIO:\n"
+        f"- Tipo de situación: {brief['tipo_situacion']}\n"
+        f"- Rol que representás: {brief['rol_otro']}\n"
+        f"- Objetivo declarado del usuario: {brief['objetivo']}\n"
+        f"- Emoción predominante del usuario: {brief['emocion']}\n"
+        f"- Tono deseado de la conversación: {brief['tono']}\n"
+        f"- Descripción del caso: {brief['que_pasa']}\n"
+    )
+
+
+def llamar_modelo_roleplay(brief: dict, conversacion: list[dict]) -> str:
+    """Llama al modelo usando Responses API, armando contexto + historial."""
+    if client is None:
+        return "No se pudo conectar con el modelo (falta API key)."
+
+    system_prompt = construir_system_prompt(brief)
+
+    # Armamos el input: system + historial
+    mensajes = [{"role": "system", "content": system_prompt}]
+    for msg in conversacion:
+        mensajes.append(
+            {"role": msg["role"], "content": msg["content"]}
+        )
+
+    try:
+        respuesta = client.responses.create(
+            model="gpt-4.1-mini",
+            input=mensajes,
+        )
+        # Adaptado al formato de la Responses API nueva
+        texto = respuesta.output[0].content[0].text
+        return texto.strip()
     except Exception as e:
-        st.error("Error generando respuesta. Revisá tu API key o el modelo.")
-        st.stop()
+        return f"Hubo un error al generar la respuesta del roleplay: {e}"
 
-st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================
+# 1) BRIEF DEL ESCENARIO
+# =========================
+
+st.markdown("### 1️⃣ Definí el escenario de la conversación")
+
+with st.form("rp_brief_form"):
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        tipo_situacion = st.selectbox(
+            "Tipo de situación",
+            [
+                "Conversación difícil con un colaborador",
+                "Feedback delicado",
+                "Marcar un límite",
+                "Reunión con socio / dirección",
+                "Coordinación entre áreas",
+                "Cliente enojado",
+                "Otro tipo de conversación crítica",
+            ],
+        )
+
+        emocion = st.selectbox(
+            "Emoción predominante en vos",
+            [
+                "Calma / foco",
+                "Ansiedad",
+                "Bronca",
+                "Irritación",
+                "Cansancio",
+                "Resignación",
+                "Confusión",
+            ],
+        )
+
+    with col2:
+        rol_otro = st.selectbox(
+            "¿Con quién es la conversación?",
+            [
+                "Colaborador / empleado",
+                "Jefe / superior",
+                "Socio / cofundador",
+                "Cliente",
+                "Proveedor",
+                "Familiar dentro del sistema",
+                "Otro",
+            ],
+        )
+
+        tono = st.selectbox(
+            "Tono que querés sostener",
+            [
+                "Directo, pero respetuoso",
+                "Formal y profesional",
+                "Contenedor pero firme",
+                "Empático, pero claro",
+                "Muy al hueso, sin vueltas",
+            ],
+        )
+
+    objetivo = st.text_input(
+        "¿Qué te gustaría lograr con esta conversación? (1 frase)",
+        placeholder="Ejemplo: que la persona entienda el impacto de lo que hace y se comprometa a cambiar su forma de trabajo.",
+    )
+
+    que_pasa = st.text_area(
+        "Contá brevemente qué está pasando y por qué esta conversación es importante:",
+        placeholder="Ejemplo: llega tarde, no cumple plazos, evita asumir errores, tensa al resto del equipo, etc.",
+    )
+
+    submitted_brief = st.form_submit_button("Generar lectura y estrategia")
+
+if submitted_brief:
+    st.session_state.rp_brief = {
+        "tipo_situacion": tipo_situacion,
+        "emocion": emocion,
+        "rol_otro": rol_otro,
+        "tono": tono,
+        "objetivo": objetivo.strip() or "Ordenar la situación y lograr un acuerdo concreto.",
+        "que_pasa": que_pasa.strip(),
+    }
+
+    st.session_state.rp_diagnostico = construir_diagnostico(st.session_state.rp_brief)
+    st.session_state.rp_estrategia = construir_estrategia(st.session_state.rp_brief)
+
+    # reiniciar conversación
+    st.session_state.rp_conversacion = []
+    st.session_state.rp_iniciado = False
+
+# =========================
+# 2) DIAGNÓSTICO + ESTRATEGIA
+# =========================
+
+if st.session_state.rp_brief:
+
+    st.markdown("---")
+    st.markdown("### 2️⃣ Lectura profesional de la conversación")
+
+    st.write(st.session_state.rp_diagnostico)
+
+    st.markdown("### 3️⃣ Estrategia sugerida (estructura Mentora en 4 pasos)")
+    st.markdown(st.session_state.rp_estrategia)
+
+    st.markdown("---")
+    st.markdown("### 4️⃣ Roleplay en vivo")
+
+    st.caption(
+        "Ahora vas a practicar la conversación. Yo voy a representar a la otra persona. "
+        "Escribí como hablarías en la vida real: directo, honesto, con el tono que elegiste."
+    )
+
+    # Inicializar primer mensaje del personaje
+    if not st.session_state.rp_iniciado and client is not None:
+        # primer turno: saludo / apertura del personaje
+        st.session_state.rp_conversacion.append(
+            {
+                "role": "assistant",
+                "content": "Hola, ¿qué querías hablar conmigo? Tengo un rato ahora.",
+            }
+        )
+        st.session_state.rp_iniciado = True
+
+    # Mostrar historial de conversación
+    for msg in st.session_state.rp_conversacion:
+        with st.chat_message("user" if msg["role"] == "user" else "assistant"):
+            st.write(msg["content"])
+
+    # Input del usuario
+    if client is None:
+        st.info("Configurá la API key de OpenAI para poder usar el roleplay en vivo.")
+    else:
+        user_input = st.chat_input("Escribí tu próximo mensaje en la conversación")
+
+        if user_input:
+            # agregar mensaje del usuario
+            st.session_state.rp_conversacion.append(
+                {"role": "user", "content": user_input.strip()}
+            )
+
+            # llamar modelo
+            respuesta = llamar_modelo_roleplay(
+                st.session_state.rp_brief,
+                st.session_state.rp_conversacion,
+            )
+
+            st.session_state.rp_conversacion.append(
+                {"role": "assistant", "content": respuesta}
+            )
+            st.rerun()
+
+else:
+    st.info("Primero completá el escenario de la conversación para generar la lectura y la estrategia.")
