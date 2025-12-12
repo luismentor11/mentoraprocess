@@ -54,3 +54,18 @@ st.markdown("""
 
 📌 Para continuar, usá el menú lateral de Streamlit y entrá a **“Mentora Roleplay Coach”**.
 """)
+import streamlit as st
+from modules.roleplay import load_system_prompt, load_roleplay_payload
+
+st.divider()
+st.header("🧠 Mentora Roleplay Coach – Test interno")
+
+if st.button("Cargar Prompt System"):
+    prompt = load_system_prompt()
+    st.success("Prompt cargado correctamente")
+    st.text_area("Prompt System", prompt, height=300)
+
+if st.button("Cargar Roleplay JSON (mock)"):
+    payload = load_roleplay_payload("data/sample_roleplay_input.json")
+    st.success("Payload cargado correctamente")
+    st.json(payload)
