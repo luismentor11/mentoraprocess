@@ -1,0 +1,27 @@
+{
+  "usuario": {
+    "rol": "Dueño de empresa",
+    "industria": "Servicios profesionales",
+    "experiencia": "Alta"
+  },
+  "mision": {
+    "nombre": "Pedir cambio concreto sin evitar conflicto",
+    "objetivo_concreto": "Que el colaborador entregue el informe semanal los lunes antes de las 12",
+    "linea_roja": "No justificar ni asumir responsabilidad ajena",
+    "resultado_minimo": "Acuerdo con fecha y consecuencia clara"
+  },
+  "interlocutor": {
+    "tipo": "Pasivo-resistente",
+    "relacion": "Colaborador clave",
+    "estilo": "Evasivo, promete sin concretar"
+  },
+  "patron_humano_usuario": {
+    "principal": "Evitacion del conflicto",
+    "trampa_habitual": "Explicar demasiado y suavizar pedidos"
+  },
+  "condiciones": {
+    "nivel_tension": 3,
+    "duracion_max_min": 8,
+    "tiempo_limitado": true
+  }
+}
