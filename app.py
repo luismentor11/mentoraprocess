@@ -1,3 +1,4 @@
+st.warning("DEBUG: app.py actualizado – Roleplay VOZ debería verse abajo")
 import streamlit as st
 
 from modules.roleplay import load_system_prompt, load_roleplay_payload
