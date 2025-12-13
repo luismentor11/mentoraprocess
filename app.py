@@ -1,74 +1,70 @@
 import streamlit as st
 
-from modules.roleplay import load_system_prompt, load_roleplay_payload
-from modules.voice import speech_to_text, text_to_speech
-from modules.roleplay_engine import run_roleplay
-
-
-# -------------------------------------------------
-# CONFIGURACIÓN GENERAL
-# -------------------------------------------------
+# =========================
+# CONFIG BÁSICA
+# =========================
 st.set_page_config(
-    page_title="Mentora Process & Roleplay Coach",
+    page_title="Mentora",
     page_icon="🧠",
-    layout="centered"
+    layout="centered",
 )
 
-st.title("🧠 Mentora Process & Roleplay Coach")
-st.caption(
-    "Plataforma de entrenamiento para conversaciones difíciles, liderazgo y decisiones empresariales."
+# =========================
+# HOME
+# =========================
+st.title("🧠 Mentora")
+st.subheader("Entrenamiento para conversaciones críticas y toma de decisiones.")
+
+st.write(
+    "Mentora es un sistema de entrenamiento profesional para líderes, equipos y empresas "
+    "que necesitan claridad, firmeza y mejores resultados en conversaciones clave."
 )
 
-# -------------------------------------------------
-# CONTENIDO INTRODUCTORIO
-# -------------------------------------------------
-st.markdown("""
-### ¿Qué es esta plataforma?
+st.markdown("---")
 
-**Mentora Process & Roleplay Coach** es una herramienta de entrenamiento para empresas, líderes y equipos que necesitan:
+# =========================
+# OPCIONES PRINCIPALES
+# =========================
+st.markdown("## Elegí por dónde empezar")
 
-- Tomar mejores decisiones bajo presión  
-- Entrenar conversaciones difíciles (clientes, jefes, colaboradores)  
-- Bajar el estrés en situaciones de conflicto o negociación  
-- Practicar en un entorno seguro, pero realista  
+col1, col2 = st.columns(2)
 
----
+with col1:
+    st.markdown("### 🔍 Process")
+    st.write(
+        "Diagnóstico estratégico para entender:\n"
+        "- dónde está el problema real\n"
+        "- qué decisiones están trabadas\n"
+        "- qué conversaciones no se están dando"
+    )
+    st.markdown("*Ideal para ordenar antes de actuar.*")
 
-### Módulos incluidos en esta demo
+with col2:
+    st.markdown("### 🎭 Roleplay Coach (voz)")
+    st.write(
+        "Entrenamiento práctico por voz para:\n"
+        "- conversaciones difíciles\n"
+        "- negociación\n"
+        "- liderazgo y límites"
+    )
+    st.markdown(
+        "Simulás la conversación, recibís feedback y entrenás antes de ir a la realidad.\n\n"
+        "*Ideal para practicar y mejorar ejecución.*"
+    )
 
-1. **Diagnóstico / Process**  
-   Espacio para analizar el contexto, los puntos ciegos y los desafíos actuales.
+st.markdown("---")
 
-2. **🎭 Mentora Roleplay Coach (voz + texto)**  
-   Un simulador que permite practicar conversaciones reales.
+# =========================
+# FLUJO RECOMENDADO
+# =========================
+st.markdown("## Uso típico en empresas")
 
-3. **Informe verbal inmediato**  
-   Feedback claro y accionable al finalizar cada roleplay.
+st.write(
+    "1. **Process** para diagnóstico\n"
+    "2. **Roleplay Coach** para entrenar\n"
+    "3. **Feedback y práctica concreta** para mejorar resultados"
+)
 
----
+st.markdown("---")
 
-### Cómo usar esta demo en una reunión con la empresa
-
-1. Explicá en 1 minuto el objetivo:  
-   > “Nuestra idea es que sus líderes y equipos puedan practicar conversaciones importantes antes de tenerlas en la vida real.”
-
-2. Pedí una situación real.  
-3. Hacé el roleplay en vivo.  
-4. Mostrá el feedback.  
-
----
-""")
-
-# -------------------------------------------------
-# TEST INTERNO – CARGA DE CONFIGURACIÓN
-# -------------------------------------------------
-st.divider()
-st.header("🧪 Test interno – Configuración")
-
-if st.button("Cargar Prompt System"):
-    prompt = load_system_prompt()
-    st.success("Prompt cargado correctamente")
-    st.text_area("Prompt System", prompt, height=250)
-
-if st.button("Cargar Roleplay JSON (mock)"):
-    payload = load_roleplay_payloa
+st.info("Seleccioná un módulo desde el menú lateral para comenzar.")
