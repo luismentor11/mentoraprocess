@@ -79,6 +79,8 @@ if "rp_conversacion" not in st.session_state:
     st.session_state.rp_conversacion = []
 if "rp_iniciado" not in st.session_state:
     st.session_state.rp_iniciado = False
+if "rp_feedback" not in st.session_state:
+    st.session_state.rp_feedback = None
 
 # =========================
 # LÓGICA MENTORA
@@ -126,6 +128,42 @@ def llamar_modelo_roleplay(brief, conversacion):
 
     system_prompt = construir_system_prompt(brief)
     mensajes = [{"role": "system", "content": system_prompt}]
+    mensajes.extend(conversacion)
+
+    respuesta = client.responses.create(
+        model="gpt-4.1-mini",
+        input=mensajes,
+    )
+
+    return respuesta.output[0].content[0].text.strip()
+
+
+def generar_feedback_ontologico(brief, conversacion):
+    if client is None:
+        return "No se pudo generar feedback."
+
+    prompt = (
+        "Actuás como un coach ontológico senior de Mentora.\n"
+        "Leés una conversación real y das feedback breve, claro y accionable.\n\n"
+        "Reglas:\n"
+        "- No expliques teoría.\n"
+        "- Sé directo y humano.\n\n"
+        "Formato de salida EXACTO:\n"
+        "FORTALEZAS:\n"
+        "- ...\n"
+        "- ...\n"
+        "- ...\n\n"
+        "A MEJORAR:\n"
+        "- ...\n"
+        "- ...\n\n"
+        "PRACTICA CLAVE:\n"
+        "- ...\n\n"
+        f"Objetivo: {brief['objetivo']}\n"
+        f"Emoción: {brief['emocion']}\n"
+        f"Tono: {brief['tono']}\n"
+    )
+
+    mensajes = [{"role": "system", "content": prompt}]
     mensajes.extend(conversacion)
 
     respuesta = client.responses.create(
@@ -186,6 +224,7 @@ if submitted:
     st.session_state.rp_estrategia = construir_estrategia(st.session_state.rp_brief)
     st.session_state.rp_conversacion = []
     st.session_state.rp_iniciado = False
+    st.session_state.rp_feedback = None
 
 # =========================
 # 2) ROLEPLAY
@@ -251,3 +290,17 @@ if st.session_state.rp_brief:
                 st.audio(audio_resp, format="audio/mp3")
 
             st.rerun()
+
+    st.markdown("---")
+    if st.button("🧠 Cerrar sesión y ver feedback"):
+        st.session_state.rp_feedback = generar_feedback_ontologico(
+            st.session_state.rp_brief,
+            st.session_state.rp_conversacion,
+        )
+
+# =========================
+# 3) FEEDBACK
+# =========================
+if st.session_state.rp_feedback:
+    st.markdown("## 🧠 Feedback Mentora")
+    st.markdown(st.session_state.rp_feedback)
