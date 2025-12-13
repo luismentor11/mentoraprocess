@@ -81,6 +81,8 @@ if "rp_iniciado" not in st.session_state:
     st.session_state.rp_iniciado = False
 if "rp_feedback" not in st.session_state:
     st.session_state.rp_feedback = None
+if "rp_patron" not in st.session_state:
+    st.session_state.rp_patron = None
 
 # =========================
 # LÓGICA MENTORA
@@ -138,6 +140,36 @@ def llamar_modelo_roleplay(brief, conversacion):
     return respuesta.output[0].content[0].text.strip()
 
 
+def detectar_patron_humano(conversacion):
+    if client is None:
+        return "No se pudo detectar patrón."
+
+    prompt = (
+        "Analizás una conversación real desde coaching ontológico.\n"
+        "Detectás el PATRÓN HUMANO DOMINANTE del usuario.\n\n"
+        "Patrones posibles:\n"
+        "- Evitación del conflicto\n"
+        "- Necesidad de aprobación\n"
+        "- Rigidez / control\n"
+        "- Confusión / dispersión\n\n"
+        "Respondé SOLO con este formato:\n"
+        "PATRON:\n"
+        "- <nombre del patrón>\n\n"
+        "LECTURA:\n"
+        "- explicación breve (2 a 3 líneas)\n"
+    )
+
+    mensajes = [{"role": "system", "content": prompt}]
+    mensajes.extend(conversacion)
+
+    respuesta = client.responses.create(
+        model="gpt-4.1-mini",
+        input=mensajes,
+    )
+
+    return respuesta.output[0].content[0].text.strip()
+
+
 def generar_feedback_ontologico(brief, conversacion):
     if client is None:
         return "No se pudo generar feedback."
@@ -145,9 +177,6 @@ def generar_feedback_ontologico(brief, conversacion):
     prompt = (
         "Actuás como un coach ontológico senior de Mentora.\n"
         "Leés una conversación real y das feedback breve, claro y accionable.\n\n"
-        "Reglas:\n"
-        "- No expliques teoría.\n"
-        "- Sé directo y humano.\n\n"
         "Formato de salida EXACTO:\n"
         "FORTALEZAS:\n"
         "- ...\n"
@@ -225,6 +254,7 @@ if submitted:
     st.session_state.rp_conversacion = []
     st.session_state.rp_iniciado = False
     st.session_state.rp_feedback = None
+    st.session_state.rp_patron = None
 
 # =========================
 # 2) ROLEPLAY
@@ -292,15 +322,22 @@ if st.session_state.rp_brief:
             st.rerun()
 
     st.markdown("---")
-    if st.button("🧠 Cerrar sesión y ver feedback"):
+    if st.button("🧠 Cerrar sesión y ver análisis"):
+        st.session_state.rp_patron = detectar_patron_humano(
+            st.session_state.rp_conversacion
+        )
         st.session_state.rp_feedback = generar_feedback_ontologico(
             st.session_state.rp_brief,
             st.session_state.rp_conversacion,
         )
 
 # =========================
-# 3) FEEDBACK
+# 3) CIERRE + PATRÓN
 # =========================
+if st.session_state.rp_patron:
+    st.markdown("## 🔍 Patrón humano detectado")
+    st.markdown(st.session_state.rp_patron)
+
 if st.session_state.rp_feedback:
     st.markdown("## 🧠 Feedback Mentora")
     st.markdown(st.session_state.rp_feedback)
